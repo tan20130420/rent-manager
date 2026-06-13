@@ -256,6 +256,23 @@ const S = {
     }
     if(!this._d.nid) this._d.nid = {r:10,t:100,b:100,l:100};
     if(this._d.nid.l === undefined) this._d.nid.l = 100;
+    async initCloud() {
+  if (!ENABLE_CLOUD_SYNC || !WORKER_URL) return;
+  try {
+    const resp = await fetch(WORKER_URL + '/api/data');
+    if (resp.ok) {
+      const cloudData = await resp.json();
+      if (cloudData && cloudData.rooms) {
+        this._d = cloudData;
+        console.log('Loaded data from cloud');
+        return true;
+      }
+    }
+  } catch(e) {
+    console.log('Cloud load failed, using local data');
+  }
+  return false;
+}
     this._save();
   },
   _save() { 
