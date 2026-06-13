@@ -228,6 +228,10 @@ const S = {
     const s = localStorage.getItem('rentData');
     if (s) { try { this._d = JSON.parse(s); } catch(e) { this._d = this._def(); } }
     else { this._d = this._def(); this._seed(); }
+    // 兼容旧数据：升级时补充缺失字段
+    if(!this._d.ledger) this._d.ledger = [];
+    if(!this._d.nid) this._d.nid = {r:10,t:100,tx:1000,b:100,l:100};
+    if(this._d.nid.l === undefined) this._d.nid.l = 100;
     this._save();
   },
   _save() { localStorage.setItem('rentData', JSON.stringify(this._d)); },
@@ -261,7 +265,7 @@ const S = {
   ab(b) { b.id = 'b' + (this._d.nid.b++); this._d.bills.push(b); this._save(); return b; },
 
   // Ledger (流水台账)
-  gl() { return this._d.ledger; },
+  gl() { return this._d.ledger || []; },
   al(l) { l.id = 'l' + (this._d.nid.l++); this._d.ledger.push(l); this._save(); return l; },
   dl(id) { this._d.ledger = this._d.ledger.filter(x => x.id !== id); this._save(); },
   batchAddLedger(rows) {
