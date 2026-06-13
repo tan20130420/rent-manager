@@ -188,6 +188,7 @@ select.fc { appearance: auto; }
       <a href="#tenants" onclick="n('tenants')">👥 租户管理 <span class="badge" id="tb">0</span></a>
       <a href="#rooms" onclick="n('rooms')">🏢 房间管理 <span class="badge" id="rb">0</span></a>
       <a href="#transactions" onclick="n('transactions')">💰 收支流水</a>
+      <a href="#ledger" onclick="n('ledger')">📒 流水台账</a>
       <a href="#utilities" onclick="n('utilities')">⚡ 水电费管理</a>
       <a href="#deposits" onclick="n('deposits')">🔒 押金管理</a>
       <a href="#reports" onclick="n('reports')">📈 报表分析</a>
@@ -219,7 +220,8 @@ const S = {
       tenants: [],
       txs: [],
       bills: [],
-      nid: {r:10,t:100,tx:1000,b:100}
+      ledger: [],
+      nid: {r:10,t:100,tx:1000,b:100,l:100}
     };
   },
   init() {
@@ -258,6 +260,16 @@ const S = {
   gb() { return this._d.bills; },
   ab(b) { b.id = 'b' + (this._d.nid.b++); this._d.bills.push(b); this._save(); return b; },
 
+  // Ledger (流水台账)
+  gl() { return this._d.ledger; },
+  al(l) { l.id = 'l' + (this._d.nid.l++); this._d.ledger.push(l); this._save(); return l; },
+  dl(id) { this._d.ledger = this._d.ledger.filter(x => x.id !== id); this._save(); },
+  batchAddLedger(rows) {
+    rows.forEach(r => { r.id = 'l' + (this._d.nid.l++); this._d.ledger.push(r); });
+    this._save();
+    return rows.length;
+  },
+
   // Summary
   sum() {
     const tx = this._d.txs;
@@ -288,6 +300,7 @@ const S = {
     if(d.tenants) this._d.tenants = d.tenants;
     if(d.txs) this._d.txs = d.txs;
     if(d.bills) this._d.bills = d.bills;
+    if(d.ledger) this._d.ledger = d.ledger;
     if(d.nid) this._d.nid = d.nid;
     this._save();
   },
@@ -383,6 +396,7 @@ function r(p) {
     case 'tenants': rt(m); break;
     case 'rooms': rr(m); break;
     case 'transactions': rtx(m); break;
+    case 'ledger': rlg(m); break;
     case 'utilities': ru(m); break;
     case 'deposits': rdp(m); break;
     case 'reports': rrp(m); break;
@@ -592,6 +606,89 @@ function stxf2(e) {
 }
 function dtx(id) { if(!confirm('确认删除？'))return; S.dtx(id); st('已删除','i'); rtxt(); }
 
+// ===== LEDGER (流水台账) =====
+function rlg(m) {
+  const ledger = S.gl();
+  // 计算余额：按日期顺序累加
+  let balance = 0;
+  const sorted = [...ledger].sort((a,b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  sorted.forEach(r => { balance += (r.income||0) - (r.expense||0); r._balance = balance; });
+  m.innerHTML = `<div class="ph"><div><h2>流水台账</h2><div class="sub">共 ${ledger.length} 笔记录，格式同微信账单</div></div><div class="bg"><button class="btn btn-p" onclick="slg()">📋 粘贴录入</button></div></div>
+    <div class="pb"><div class="card">
+      <div class="fl">
+        <input class="fc" placeholder="搜索摘要..." id="lgs" oninput="rlgt()" style="min-width:200px">
+        <input class="fc" type="month" id="lgm" onchange="rlgt()" style="min-width:160px">
+      </div>
+      <div class="tc" id="lgc"></div>
+    </div></div>`;
+  rlgt();
+}
+function rlgt() {
+  const q = ($('lgs')?.value||'').toLowerCase();
+  const mf = $('lgm')?.value||'';
+  let ledger = S.gl();
+  // 计算余额
+  let balance = 0;
+  const sorted = [...ledger].sort((a,b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  sorted.forEach(r => { balance += (r.income||0) - (r.expense||0); r._balance = balance; });
+  if(q) ledger = ledger.filter(r => (r.summary||'').toLowerCase().includes(q));
+  if(mf) ledger = ledger.filter(r => (r.date||'').startsWith(mf));
+  const c = $('lgc'); if(!c)return;
+  c.innerHTML = ledger.length===0 ? '<div class="es"><div class="ic">📒</div><h4>暂无台账记录</h4><p class="tm">点击右上角「粘贴录入」从微信/Excel 批量粘贴</p></div>' :
+    `<table><thead><tr><th>日期</th><th>摘要</th><th class="tr2">收入</th><th class="tr2">支出</th><th class="tr2">余额</th><th>备注</th><th>操作</th></tr></thead><tbody>
+      ${[...ledger].sort((a,b) => b.date.localeCompare(b.date) || b.id.localeCompare(b.id)).map(r => `<tr>
+        <td class="fb">${fd(r.date)}</td><td>${r.summary||'-'}</td>
+        <td class="tr2 ts fb">${r.income?fm(r.income):'-'}</td>
+        <td class="tr2 td fb">${r.expense?fm(r.expense):'-'}</td>
+        <td class="tr2 fb">${fm(r._balance)}</td>
+        <td class="tm">${r.note||'-'}</td>
+        <td><button class="btn btn-s btn-o" onclick="dlg('${r.id}')" style="color:var(--danger);border-color:var(--danger);">删除</button></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+function dlg(id) { if(!confirm('确认删除这条台账记录？'))return; S.dl(id); st('已删除','i'); rlgt(); }
+function slg() {
+  om(`<div class="mh"><h3>📋 批量粘贴录入</h3><button class="btn-i" onclick="cm()">✕</button></div>
+    <div class="mb">
+      <div style="margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.6;">
+        <strong>格式说明：</strong>从微信账单或 Excel 复制数据粘贴到下方文本框。<br>
+        每行一条记录，用 <strong>Tab</strong> 或 <strong>逗号</strong> 分隔列。<br>
+        列顺序：<strong>日期、摘要、收入、支出、备注</strong>（备注可选）<br>
+        日期格式：2025-09-09 或 2025/09/09<br>
+        示例：<br>
+        <code style="background:var(--bg);padding:4px 8px;border-radius:4px;font-size:12px;">2025-09-09\t押一付二\t1500\t0\t9月房租</code>
+      </div>
+      <div class="fg"><label>粘贴数据</label>
+        <textarea class="fc" id="lgt" rows="10" style="font-family:monospace;font-size:13px;" placeholder="在此粘贴数据..."></textarea>
+      </div>
+      <div class="fa"><button type="button" class="btn btn-o" onclick="cm()">取消</button><button type="button" class="btn btn-p" onclick="slg2()">确认导入</button></div>
+    </div>`);
+}
+function slg2() {
+  const text = $('lgt')?.value.trim();
+  if(!text) { st('请先粘贴数据','e'); return; }
+  const rows = text.split('\n').filter(r => r.trim());
+  let count = 0, errors = [];
+  rows.forEach((row, idx) => {
+    // 支持 Tab 或 逗号 分隔
+    let cols = row.includes('\t') ? row.split('\t') : row.split(',');
+    cols = cols.map(c => c.trim()).filter(c => c);
+    if(cols.length < 3) { errors.push('第'+(idx+1)+'行: 列数不足'); return; }
+    const date = cols[0].replace(/\//g,'-');
+    const summary = cols[1];
+    const income = parseFloat(cols[2]) || 0;
+    const expense = cols.length > 3 ? (parseFloat(cols[3]) || 0) : 0;
+    const note = cols.length > 4 ? cols.slice(4).join(' ') : '';
+    if(!date) { errors.push('第'+(idx+1)+'行: 日期无效'); return; }
+    S.al({ date, summary, income, expense, note });
+    count++;
+  });
+  cm();
+  if(count > 0) st('成功导入 '+count+' 条记录','s');
+  if(errors.length) st('导入完成，'+errors.length+' 条失败','i');
+  rlgt();
+}
+
 // ===== UTILITIES =====
 function ru(m) {
   const s=S.sum(), bills=S.gb();
@@ -723,6 +820,7 @@ function rbk(m) {
             <div class="dr"><span class="dl">房间数</span><span class="dv">${S.gr().length}</span></div>
             <div class="dr"><span class="dl">租户数</span><span class="dv">${S.gt().length}</span></div>
             <div class="dr"><span class="dl">收支记录</span><span class="dv">${S.gtx().length}</span></div>
+            <div class="dr"><span class="dl">台账记录</span><span class="dv">${S.gl().length}</span></div>
             <div class="dr"><span class="dl">抄表记录</span><span class="dv">${S.gb().length}</span></div>
             <div class="dr"><span class="dl">数据大小</span><span class="dv">${(new Blob([S.exp()]).size/1024).toFixed(1)} KB</span></div>
           </div>
