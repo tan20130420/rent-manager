@@ -1037,8 +1037,16 @@ function ej() {
 }
 
 // ===== INIT =====
-S.init();
-window.addEventListener('hashchange', () => { const p=window.location.hash.slice(1)||'dashboard'; n(p); });
+window.addEventListener('DOMContentLoaded', async () => {
+  S.init();
+  // 尝试从云端同步
+  const loaded = await S.initCloud();
+  if (!loaded) {
+    // 本地加载失败，使用默认数据
+    S.init();
+  }
+  r(window.location.hash.slice(1) || 'dashboard');
+});
 const ip = window.location.hash.slice(1) || 'dashboard';
 n(ip);
 </script>
