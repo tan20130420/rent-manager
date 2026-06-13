@@ -202,6 +202,9 @@ select.fc { appearance: auto; }
 
 <script>
 // ===== STORE =====
+// ===== CLOUDFLARE WORKERS CONFIG =====
+const WORKER_URL = 'https://你的worker名字.workers.dev'; // 替换为你的 Worker URL
+const ENABLE_CLOUD_SYNC = true; // 设为 false 关闭云同步
 const S = {
   _d: null,
   _def() {
@@ -255,7 +258,17 @@ const S = {
     if(this._d.nid.l === undefined) this._d.nid.l = 100;
     this._save();
   },
-  _save() { localStorage.setItem('rentData', JSON.stringify(this._d)); },
+  _save() { 
+  localStorage.setItem('rentData', JSON.stringify(this._d));
+  // 异步上传到 GitHub（不阻塞 UI）
+  if (ENABLE_CLOUD_SYNC && WORKER_URL) {
+    fetch(WORKER_URL + '/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(this._d)
+    }).catch(e => console.log('Cloud sync failed:', e.message));
+  }
+}
   g() { return this._d; },
 
   // Rooms
