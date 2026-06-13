@@ -95,7 +95,7 @@ tbody tr:hover { background: var(--hover); }
 .btn-d { background: var(--danger); color: #fff; }
 .btn-d:hover { background: #c5221f; }
 .btn-s { padding: 4px 12px; font-size: 12px; }
-.btn-i { width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; border: none; cursor: pointer; background: transparent; color: var(--text2); transition: all .2s; }
+.btn-i { width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; border: none; cursor: pointer; background: transparent; color: var(--text2); }
 .btn-i:hover { background: var(--hover); color: var(--text); }
 .bg { display: flex; gap: 8px; flex-wrap: wrap; }
 .fg { margin-bottom: 16px; }
@@ -135,7 +135,7 @@ select.fc { appearance: auto; }
 .toast.e { background: var(--danger); }
 .toast.i { background: var(--primary); }
 @keyframes ti { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-.mt { display: none; position: fixed; top: 12px; left: 12px; z-index: 101; width: 40px; height: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--rs); cursor: pointer; align-items: center; justify-content: center; font-size: 20px; }
+.mt { display: none; position: fixed; top: 12px; left: 12px; z-index: 101; width: 40px; height: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--rs); cursor: pointer; }
 .mt:hover { background: var(--hover); }
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); }
@@ -201,10 +201,11 @@ select.fc { appearance: auto; }
 <div class="mo" id="mo" onclick="if(event.target===this)cm()"><div class="mw" id="mc"></div></div>
 
 <script>
-// ===== STORE =====
 // ===== CLOUDFLARE WORKERS CONFIG =====
 const WORKER_URL = 'https://你的worker名字.workers.dev'; // 替换为你的 Worker URL
 const ENABLE_CLOUD_SYNC = true; // 设为 false 关闭云同步
+
+// ===== STORE =====
 const S = {
   _d: null,
   _def() {
@@ -256,36 +257,37 @@ const S = {
     }
     if(!this._d.nid) this._d.nid = {r:10,t:100,b:100,l:100};
     if(this._d.nid.l === undefined) this._d.nid.l = 100;
-    async initCloud() {
-  if (!ENABLE_CLOUD_SYNC || !WORKER_URL) return;
-  try {
-    const resp = await fetch(WORKER_URL + '/api/data');
-    if (resp.ok) {
-      const cloudData = await resp.json();
-      if (cloudData && cloudData.rooms) {
-        this._d = cloudData;
-        console.log('Loaded data from cloud');
-        return true;
-      }
-    }
-  } catch(e) {
-    console.log('Cloud load failed, using local data');
-  }
-  return false;
-}
     this._save();
   },
+  async initCloud() {
+    if (!ENABLE_CLOUD_SYNC || !WORKER_URL) return false;
+    try {
+      const resp = await fetch(WORKER_URL + '/api/data');
+      if (resp.ok) {
+        const cloudData = await resp.json();
+        if (cloudData && cloudData.rooms) {
+          this._d = cloudData;
+          localStorage.setItem('rentData', JSON.stringify(this._d));
+          console.log('Loaded data from cloud');
+          return true;
+        }
+      }
+    } catch(e) {
+      console.log('Cloud load failed, using local data');
+    }
+    return false;
+  },
   _save() { 
-  localStorage.setItem('rentData', JSON.stringify(this._d));
-  // 异步上传到 GitHub（不阻塞 UI）
-  if (ENABLE_CLOUD_SYNC && WORKER_URL) {
-    fetch(WORKER_URL + '/api/data', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(this._d)
-    }).catch(e => console.log('Cloud sync failed:', e.message));
-  }
-}
+    localStorage.setItem('rentData', JSON.stringify(this._d));
+    // 异步上传到 GitHub（不阻塞 UI）
+    if (ENABLE_CLOUD_SYNC && WORKER_URL) {
+      fetch(WORKER_URL + '/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(this._d)
+      }).catch(e => console.log('Cloud sync failed:', e.message));
+    }
+  },
   g() { return this._d; },
 
   // Rooms
@@ -392,59 +394,8 @@ const S = {
     d.tenants.filter(t => !t.endDate || t.endDate >= '2026-06-13').forEach(t => {
       const r = d.rooms.find(x => x.id === t.roomId); if(r){r.cur=t.id;r.status='在租';}
     });
-    d.ledger = [
-      {id:'l1000',交易时间:'2025-09-09 12:37',交易类:'转账',对方:'无事小神仙🍵',商品:'转账备注:押一付二',收:'收入',金额:1500,支付方式:'/',状态:'已存入零钱',交易单号:'1000050001202509091421275260201',商户单号:'/',备注:'/',水费:0,电费:0},
-      {id:'l1001',交易时间:'2025-09-12 19:40',交易类:'转账',对方:'象盒找含浦店经理-向前15274965833',商品:'转账备注:微信转账',收:'支出',金额:50,支付方式:'零钱',状态:'对方已收钱',交易单号:'53010001919071202509121489068484',商户单号:'1000050001202509121428229767001',备注:'/',水费:0,电费:0},
-      {id:'l1002',交易时间:'2025-09-12 20:13',交易类:'转账',对方:'早聆.',商品:'转账备注:2025年9月15~11月14号房租',收:'收入',金额:1400,支付方式:'/',状态:'已存入零钱',交易单号:'1000050001202509120023319964243',商户单号:'/',备注:'/',水费:0,电费:0},
-      {id:'l1003',交易时间:'2025-09-14 17:20',交易类:'转账',对方:'象盒找含浦店经理-向前15274965833',商品:'转账备注:微信转账',收:'支出',金额:30,支付方式:'零钱',状态:'对方已收钱',交易单号:'53010001933085202509142087592954',商户单号:'1000050001202509140622302195799',备注:'/',水费:0,电费:0},
-      {id:'l1004',交易时间:'2025-09-19 15:44',交易类:'转账',对方:'Small volcano6',商品:'转账备注:押金加一个月的房租',收:'收入',金额:1600,支付方式:'/',状态:'已存入零钱',交易单号:'1000050001202509190624559002761',商户单号:'/',备注:'/',水费:0,电费:0},
-      {id:'l1005',交易时间:'2025-09-23 14:26',交易类:'转账',对方:'睡得犯困了',商品:'转账备注:微信转账',收:'收入',金额:850,支付方式:'/',状态:'已存入零钱',交易单号:'1000050001202509230128230901968',商户单号:'/',备注:'/',水费:0,电费:0},
-      {id:'l1006',交易时间:'2025-09-26 16:07',交易类:'转账',对方:'友',商品:'转账备注:微信转账',收:'收入',金额:1400,支付方式:'/',状态:'已存入零钱',交易单号:'1000050001202509261028133253810',商户单号:'/',备注:'/',水费:0,电费:0},
-      {id:'l1007',交易时间:'2025-10-05 10:07',交易类:'转账',对方:'睡得犯困了',商品:'转账备注:微信转账',收:'收入',金额:850,支付方式:'/',状态:'已存入零钱',交易单号:'1000050001202510051321245660109',商户单号:'/',备注:'/',水费:0,电费:0},
-      {id:'l1008',交易时间:'2025-10-15 22:07',交易类:'转账',对方:'早聆.',商品:'转账备注:微信转账',收:'收入',金额:779,支付方式:'/',状态:'已存入零钱',交易单号:'1000050001202510150727801467869',商户单号:'/',备注:'/',水费:30,电费:49},
-      {id:'l1009',交易时间:'2025-11-22 20:32',交易类:'转账',对方:'无事小神仙🍵',商品:'转账备注:退扣费用后的押金',收:'支出',金额:251,支付方式:'零钱',状态:'对方已收钱',交易单号:'53010002168171202511221839452436',商户单号:'1000050001202511220028474563524',备注:'/',水费:60,电费:19},
-      {id:'l1010',交易时间:'2025-12-14 13:29',交易类:'转账',对方:'早聆.',商品:'转账备注:微信转账',收:'支出',金额:610,支付方式:'零钱',状态:'对方已收钱',交易单号:'53010002364049202512142576664061',商户单号:'1000050001202512141123928709262',备注:'/',水费:30,电费:90},
-      {id:'l1011',交易时间:'2026-01-10 15:58',交易类:'转账',对方:'小可',商品:'象盒找含浦店经理-向前15274965833（中介费）',收:'支出',金额:250,支付方式:'零钱',状态:'对方已收钱',交易单号:'53010002464113202601103734967460',商户单号:'1000050001202601101123173429086',备注:'/',水费:0,电费:0},
-      {id:'l1012',交易时间:'2026-01-14 19:49',交易类:'转账',对方:'睡得犯困了',商品:'转账备注:微信转账',收:'支出',金额:350,支付方式:'零钱',状态:'对方已收钱',交易单号:'53010002469061202601142013100672',商户单号:'1000050001202601140822481002015',备注:'/',水费:0,电费:0},
-      {id:'l1013',交易时间:'2026-02-26 13:00',交易类:'转账',对方:'睡得犯困了',商品:'转账备注:微信转账',收:'支出',金额:800,支付方式:'零钱',状态:'对方已收钱',交易单号:'5301000246906120260226131800161444',商户单号:'1000050001202602260031800161444',备注:'/',水费:0,电费:0},
-      {id:'l1014',交易时间:'2026-03-01 17:00',交易类:'转账',对方:'Ani126',商品:'象盒找含浦店经理-向前15274965833（中介费）',收:'支出',金额:100,支付方式:'零钱',状态:'对方已收钱',交易单号:'5301000246906120260301031800161444',商户单号:'1000050001202603010031800161444',备注:'/',水费:0,电费:0},
-      {id:'l1015',交易时间:'2026-03-05 14:00',交易类:'转账',对方:'小凡不烦',商品:'转账备注:微信转账',收:'支出',金额:350,支付方式:'零钱',状态:'对方已收钱',交易单号:'5301000246906120260305031800161444',商户单号:'1000050001202603050031800161444',备注:'/',水费:0,电费:0},
-      {id:'l1016',交易时间:'2026-03-10 15:55',交易类:'转账',对方:'.三提腊扣.',商品:'象盒找含浦店经理-向前15274965833（中介费）',收:'支出',金额:100,支付方式:'零钱',状态:'对方已收钱',交易单号:'53010002372073202603101893005992',商户单号:'1000050001202603101125957291888',备注:'/',水费:0,电费:0},
-    ];
-    d.bills = [
-      {id:'b1',month:'2025-09',building:'305栋',type:'电费',usage:110,amount:64.68},
-      {id:'b2',month:'2025-10',building:'305栋',type:'电费',usage:525,amount:368.70},
-      {id:'b3',month:'2025-11',building:'305栋',type:'电费',usage:528,amount:371.36},
-      {id:'b4',month:'2025-12',building:'305栋',type:'电费',usage:689,amount:489.33},
-      {id:'b5',month:'2026-01',building:'305栋',type:'电费',usage:564,amount:378.33},
-      {id:'b6',month:'2026-02',building:'305栋',type:'电费',usage:98,amount:57.62},
-      {id:'b7',month:'2026-03',building:'305栋',type:'电费',usage:390,amount:248.82},
-      {id:'b8',month:'2026-04',building:'305栋',type:'电费',usage:374,amount:234.61},
-      {id:'b9',month:'2026-05',building:'305栋',type:'电费',usage:508,amount:353.60},
-      {id:'b10',month:'2025-11',building:'106栋',type:'电费',usage:3,amount:1.76},
-      {id:'b11',month:'2025-12',building:'106栋',type:'电费',usage:9,amount:5.29},
-      {id:'b12',month:'2026-01',building:'106栋',type:'电费',usage:117,amount:68.80},
-      {id:'b13',month:'2026-02',building:'106栋',type:'电费',usage:55,amount:32.34},
-      {id:'b14',month:'2026-03',building:'106栋',type:'电费',usage:220,amount:30.36},
-      {id:'b15',month:'2026-04',building:'106栋',type:'电费',usage:189,amount:111.13},
-      {id:'b16',month:'2026-05',building:'106栋',type:'电费',usage:340,amount:206.92},
-      {id:'b17',month:'2025-09',building:'305栋',type:'水费',usage:0,amount:0},
-      {id:'b18',month:'2025-10',building:'305栋',type:'水费',usage:0,amount:0},
-      {id:'b19',month:'2025-11',building:'305栋',type:'水费',usage:0,amount:0},
-      {id:'b20',month:'2025-12',building:'305栋',type:'水费',usage:0,amount:0},
-      {id:'b21',month:'2026-01',building:'305栋',type:'水费',usage:0,amount:0},
-      {id:'b22',month:'2026-02',building:'305栋',type:'水费',usage:0,amount:0},
-      {id:'b23',month:'2026-03',building:'305栋',type:'水费',usage:0,amount:0},
-      {id:'b24',month:'2026-04',building:'305栋',type:'水费',usage:0,amount:0},
-      {id:'b25',month:'2026-05',building:'305栋',type:'水费',usage:0,amount:0},
-      {id:'b26',month:'2025-11',building:'106栋',type:'水费',usage:0,amount:0},
-      {id:'b27',month:'2025-12',building:'106栋',type:'水费',usage:0,amount:0},
-      {id:'b28',month:'2026-01',building:'106栋',type:'水费',usage:0,amount:0},
-      {id:'b29',month:'2026-02',building:'106栋',type:'水费',usage:0,amount:0},
-      {id:'b30',month:'2026-03',building:'106栋',type:'水费',usage:0,amount:0},
-      {id:'b31',month:'2026-04',building:'106栋',type:'水费',usage:0,amount:0},
-      {id:'b32',month:'2026-05',building:'106栋',type:'水费',usage:0,amount:0},
-    ];
+    d.ledger = [];
+    d.bills = [];
     this._save();
   }
 };
@@ -458,597 +409,27 @@ function ml(m) { if(!m)return ''; const [y,mm]=m.split('-'); return y+'年'+pars
 function rn(id) { const r=S.grm(id); return r?r.name:''; }
 function tn(id) { const t=S.gtm(id); return t?t.name:''; }
 function ts() { $('sidebar').classList.toggle('open'); }
-function n(p) { cp=p; window.location.hash=p; document.querySelectorAll('.nav a').forEach(e=>e.classList.remove('active')); const a=document.querySelector(`.nav a[href="#${p}"]`); if(a)a.classList.add('active'); r(p); $('sidebar').classList.remove('open'); }
-function st(msg,type='i') { const t=document.createElement('div'); t.className='toast '+type; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},3000); }
+function n(p) { cp=p; window.location.hash=p; document.querySelectorAll('.nav a').forEach(e=>e.classList.remove('active')); const a=document.querySelector(`.nav a[href="#${p}"]`); if(a)a.classList.add('active'); r(p); }
+function st(msg,type='i') { const t=document.createElement('div'); t.className='toast '+type; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300)},3000); }
 function om(html) { $('mc').innerHTML=html; $('mo').classList.add('show'); }
 function cm() { $('mo').classList.remove('show'); }
 
 function r(p) {
   const m = $('main');
-  S.g(); // ensure data loaded
-  switch(p) {
-    case 'dashboard': rd(m); break;
-    case 'tenants': rt(m); break;
-    case 'rooms': rr(m); break;
-    case 'transactions': rtx(m); break;
-    case 'ledger': rlg(m); break;
-    case 'utilities': ru(m); break;
-    case 'deposits': rdp(m); break;
-    case 'reports': rrp(m); break;
-    case 'backup': rbk(m); break;
-    default: rd(m);
-  }
-  const s = S.sum();
-  $('tb').textContent = s.at || 0;
-  $('rb').textContent = s.ar || 0;
+  S.g();
+  m.innerHTML = '<div class="es"><div class="ic">🔧</div><h4>功能开发中</h4></div>';
 }
 
-// ===== DASHBOARD =====
-function rd(m) {
-  const s = S.sum();
-  const tx = S.gtx();
-  const now = new Date(); const tm = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  const tmd = (s.mm||{})[tm]||{i:0,e:0};
-  m.innerHTML = `
-    <div class="ph"><div><h2>仪表盘</h2><div class="sub">租房经营总览</div></div><div class="bg"><button class="btn btn-p" onclick="n('transactions')">+ 记一笔</button></div></div>
-    <div class="pb">
-      <div class="grid">
-        <div class="sc"><div class="l">本月收入</div><div class="v">${fm(tmd.i)}</div><div class="c up">本月支出 ${fm(tmd.e)}</div></div>
-        <div class="sc green"><div class="l">累计净收入</div><div class="v">${fm(s.ni)}</div><div class="c up">总收入 ${fm(s.ti)}</div></div>
-        <div class="sc"><div class="l">在租房间</div><div class="v">${s.ar} / ${s.tr}</div><div class="c ${s.vr>30?'down':'up'}">空置率 ${s.vr}%</div></div>
-        <div class="sc yellow"><div class="l">在租租户</div><div class="v">${s.at}</div><div class="c">在管押金 ${fm(s.ud)}</div></div>
-      </div>
-      <div class="card"><div class="ch"><h3>月度收支趋势</h3></div><div class="cc"><canvas id="c1"></canvas></div></div>
-      <div class="grid" style="grid-template-columns:1fr 1fr;">
-        <div class="card"><div class="ch"><h3>水电费毛利</h3></div><div class="cc" style="height:200px"><canvas id="c2"></canvas></div></div>
-        <div class="card"><div class="ch"><h3>获客渠道</h3></div><div class="cc" style="height:200px"><canvas id="c3"></canvas></div></div>
-      </div>
-      <div class="card">
-        <div class="ch"><h3>最近收支</h3></div>
-        <div class="tc"><table><thead><tr><th>交易时间</th><th>对方</th><th>收/支</th><th>金额</th><th>备注</th></tr></thead><tbody>
-          ${tx.slice(-8).reverse().map(t => `<tr><td class="fb" style="white-space:nowrap">${t.交易时间||'-'}</td><td>${t.对方||'-'}</td><td><span class="tag ${t.收==='收入'?'tg':'tr'}">${t.收||'-'}</span></td><td class="fb ${t.收==='收入'?'ts':'td'}">${t.金额?fm(t.金额):'-'}</td><td class="tm">${t.备注&&t.备注!=='/'?t.备注:'-'}</td></tr>`).join('')}
-          ${tx.length===0?'<tr><td colspan="5" class="tc2 tm">暂无数据</td></tr>':''}
-        </tbody></table></div>
-      </div>
-    </div>`;
-  setTimeout(() => {
-    const c1=$('c1'); if(c1&&Object.keys(s.mm).length){if(charts.c1)charts.c1.destroy();const mk=Object.keys(s.mm).sort();charts.c1=new Chart(c1,{type:'bar',data:{labels:mk.map(ml),datasets:[{label:'收入',data:mk.map(m=>s.mm[m].i),backgroundColor:'#0f9d58',borderRadius:4},{label:'支出',data:mk.map(m=>s.mm[m].e),backgroundColor:'#d93025',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'¥'+v.toLocaleString()}}}}});}
-    const c2=$('c2'); if(c2){if(charts.c2)charts.c2.destroy();charts.c2=new Chart(c2,{type:'doughnut',data:{labels:['水费收入','电费收入','水电费支出'],datasets:[{data:[s.wi_water,s.wi_elec,s.ue],backgroundColor:['#1a73e8','#0f9d58','#d93025'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:ctx=>ctx.label+': '+fm(ctx.raw)}}}}});}
-    const c3=$('c3'); if(c3&&Object.keys(s.sc).length){if(charts.c3)charts.c3.destroy();const l=Object.keys(s.sc);charts.c3=new Chart(c3,{type:'doughnut',data:{labels:l,datasets:[{data:Object.values(s.sc),backgroundColor:['#1a73e8','#0f9d58','#f9ab00','#d93025','#9334e6','#e37400'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});}
-  }, 100);
-}
-
-// ===== TENANTS =====
-function rt(m) {
-  const s = S.sum();
-  m.innerHTML = `<div class="ph"><div><h2>租户管理</h2><div class="sub">共 ${S.gt().length} 位租户，在租 ${s.at} 位</div></div><button class="btn btn-p" onclick="stf()">+ 新增租户</button></div>
-    <div class="pb"><div class="card">
-      <div class="fl">
-        <select class="fc" id="tf" onchange="rtt()"><option value="all">全部租户</option><option value="active">在租</option><option value="ended">已退租</option></select>
-        <input class="fc" placeholder="搜索租户名称..." id="tsi" oninput="rtt()" style="min-width:200px">
-      </div>
-      <div class="tc" id="ttc"></div>
-    </div></div>`;
-  rtt();
-}
-function rtt() {
-  const f=$('tf')?.value||'all', q=($('tsi')?.value||'').toLowerCase();
-  const now = new Date().toISOString().slice(0,10);
-  let t = S.gt();
-  if(f==='active') t=t.filter(x=>!x.endDate||x.endDate>=now);
-  if(f==='ended') t=t.filter(x=>x.endDate&&x.endDate<now);
-  if(q) t=t.filter(x=>x.name.toLowerCase().includes(q));
-  const c=$('ttc'); if(!c)return;
-  c.innerHTML = t.length===0 ? '<div class="es"><div class="ic">👥</div><h4>暂无租户数据</h4></div>' :
-    `<table><thead><tr><th>租户名称</th><th>房间</th><th>来源</th><th>入住</th><th>到期</th><th>押金</th><th>状态</th><th>操作</th></tr></thead><tbody>
-      ${t.map(x => { const a=!x.endDate||x.endDate>=now; return `<tr>
-        <td class="fb">${x.name}</td><td>${rn(x.roomId)}</td><td><span class="tag tb">${x.source}</span></td>
-        <td>${fd(x.startDate)}</td><td>${fd(x.endDate)}</td>
-        <td>${fm(x.deposit)} ${x.depositReturned?'<span class="tag tg2">已退</span>':'<span class="tag tg">在管</span>'}</td>
-        <td><span class="tag ${a?'tg':'tr'}">${a?'在租':'已退'}</span></td>
-        <td><button class="btn btn-s btn-o" onclick="stf('${x.id}')">编辑</button>${a?`<button class="btn btn-s btn-d" onclick="etf('${x.id}')">退租</button>`:''}</td>
-      </tr>`;}).join('')}
-    </tbody></table>`;
-}
-function stf(id) {
-  const t = id ? S.gtm(id) : null;
-  const rooms = S.gr();
-  om(`<div class="mh"><h3>${t?'编辑租户':'新增租户'}</h3><button class="btn-i" onclick="cm()">✕</button></div>
-    <div class="mb"><form id="tfm" onsubmit="stfs(event,'${id||''}')">
-      <div class="fr"><div class="fg"><label>租户名称 *</label><input class="fc" name="name" value="${t?t.name:''}" required></div>
-      <div class="fg"><label>手机号</label><input class="fc" name="phone" value="${t?t.phone:''}"></div></div>
-      <div class="fr"><div class="fg"><label>房间 *</label><select class="fc" name="roomId" required><option value="">选择房间</option>${rooms.map(r=>`<option value="${r.id}" ${t&&t.roomId===r.id?'selected':''}>${r.name} (${r.building})</option>`).join('')}</select></div>
-      <div class="fg"><label>来源</label><select class="fc" name="source"><option value="QQ群" ${t&&t.source==='QQ群'?'selected':''}>QQ群</option><option value="中介-向前" ${t&&t.source==='中介-向前'?'selected':''}>中介-向前</option><option value="小红书" ${t&&t.source==='小红书'?'selected':''}>小红书</option><option value="推荐" ${t&&t.source==='推荐'?'selected':''}>推荐</option><option value="续住" ${t&&t.source==='续住'?'selected':''}>续住</option><option value="其他" ${t&&t.source==='其他'?'selected':''}>其他</option></select></div></div>
-      <div class="fr"><div class="fg"><label>入住日期 *</label><input class="fc" type="date" name="startDate" value="${t?t.startDate:''}" required></div>
-      <div class="fg"><label>到期日期</label><input class="fc" type="date" name="endDate" value="${t?t.endDate:''}"></div></div>
-      <div class="fr"><div class="fg"><label>押金</label><input class="fc" type="number" name="deposit" value="${t?t.deposit:0}" min="0" step="0.01"></div>
-      <div class="fg"><label>押金状态</label><select class="fc" name="depositReturned"><option value="false" ${t&&!t.depositReturned?'selected':''}>在管</option><option value="true" ${t&&t.depositReturned?'selected':''}>已退还</option></select></div></div>
-      <div class="fg"><label>备注</label><input class="fc" name="notes" value="${t?t.notes:''}"></div>
-      <div class="fa"><button type="button" class="btn btn-o" onclick="cm()">取消</button><button type="submit" class="btn btn-p">${t?'保存修改':'添加租户'}</button></div>
-    </form></div>`);
-}
-function stfs(e, id) {
-  e.preventDefault(); const d=Object.fromEntries(new FormData(e.target));
-  d.deposit=parseFloat(d.deposit)||0; d.depositReturned=d.depositReturned==='true';
-  if(id) { S.ut(id,d); st('租户已更新','s'); }
-  else { S.at(d); st('租户添加成功','s'); }
-  cm(); rtt(); const s=S.sum(); $('tb').textContent=s.at;
-}
-function etf(id) {
-  const t=S.gtm(id); if(!t)return;
-  om(`<div class="mh"><h3>退租确认</h3><button class="btn-i" onclick="cm()">✕</button></div>
-    <div class="mb"><p>确认 <strong>${t.name}</strong>（${rn(t.roomId)}）退租？</p>
-    <div class="fg mt4"><label>退租日期</label><input class="fc" type="date" id="ed" value="${new Date().toISOString().split('T')[0]}"></div>
-    <div class="fg"><label>押金退还金额</label><input class="fc" type="number" id="dra" value="${t.deposit}" min="0" step="0.01"></div></div>
-    <div class="mf"><button class="btn btn-o" onclick="cm()">取消</button><button class="btn btn-d" onclick="cetf('${id}')">确认退租</button></div>`);
-}
-function cetf(id) {
-  const t=S.gtm(id); const ed=$('ed').value; const ra=parseFloat($('dra').value)||0;
-  S.et(id,ed);
-  if(ra>0) S.atx({交易时间:ed+' 0:00',交易类:'转账',对方:t.name,商品:'转账备注:退押金',收:'支出',金额:ra,支付方式:'零钱',状态:'对方已收钱',交易单号:'',商户单号:'',备注:t.name+'退押金',水费:0,电费:0});
-  cm(); st(t.name+' 退租成功','s'); rtt(); const s=S.sum(); $('tb').textContent=s.at;
-}
-
-// ===== ROOMS =====
-function rr(m) {
-  const rooms=S.gr(), tenants=S.gt();
-  m.innerHTML = `<div class="ph"><div><h2>房间管理</h2><div class="sub">${rooms.length} 个房间 · 在租 ${rooms.filter(r=>r.status==='在租').length} · 空置 ${rooms.filter(r=>r.status==='空置').length}</div></div><button class="btn btn-p" onclick="srf()">+ 新增房间</button></div>
-    <div class="pb"><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr));">
-      ${rooms.map(r => {
-        const ht = tenants.filter(t=>t.roomId===r.id);
-        const ct = ht.find(t=>!t.endDate||t.endDate>=new Date().toISOString().slice(0,10));
-        const sc = r.status==='在租'?'tg':r.status==='空置'?'ty':'tg2';
-        return `<div class="card">
-          <div class="fb2"><h3 style="font-size:18px;font-weight:600;">${r.name}</h3><span class="tag ${sc}">${r.status}</span></div>
-          <div class="tm" style="font-size:13px;margin:4px 0 12px;">${r.building} · 月租 ${fm(r.rent)}</div>
-          ${ct?`<div style="background:var(--primary-light);padding:10px 12px;border-radius:var(--rs);margin-bottom:8px;"><div class="fb">${ct.name}</div><div class="tm" style="font-size:12px;">${fd(ct.startDate)} ~ ${fd(ct.endDate)}</div></div>`:'<div class="tm" style="font-size:13px;padding:8px 0;">暂无租户</div>'}
-          ${ht.length>1?`<details style="margin-top:8px;"><summary style="font-size:12px;color:var(--text2);cursor:pointer;">历史租户 (${ht.length-1})</summary><div style="margin-top:6px;font-size:12px;">${ht.filter(x=>x.id!==ct?.id).slice(-5).reverse().map(x=>`<div style="padding:4px 0;border-bottom:1px solid var(--border);">${x.name} · ${fd(x.startDate)}~${fd(x.endDate)}</div>`).join('')}</div></details>`:''}
-          <div style="margin-top:12px;"><button class="btn btn-s btn-o" onclick="srf('${r.id}')">编辑</button></div>
-        </div>`;
-      }).join('')}
-    </div></div>`;
-}
-function srf(id) {
-  const r = id ? S.grm(id) : null;
-  om(`<div class="mh"><h3>${r?'编辑房间':'新增房间'}</h3><button class="btn-i" onclick="cm()">✕</button></div>
-    <div class="mb"><form id="rfm" onsubmit="srf2(event,'${id||''}')">
-      <div class="fr"><div class="fg"><label>房间名称 *</label><input class="fc" name="name" value="${r?r.name:''}" placeholder="如 305-1" required></div>
-      <div class="fg"><label>楼栋 *</label><select class="fc" name="building" required><option value="305栋" ${r&&r.building==='305栋'?'selected':''}>305栋</option><option value="106栋" ${r&&r.building==='106栋'?'selected':''}>106栋</option></select></div></div>
-      <div class="fr"><div class="fg"><label>月租金 *</label><input class="fc" type="number" name="rent" value="${r?r.rent:''}" min="0" step="0.01" required></div>
-      <div class="fg"><label>状态</label><select class="fc" name="status"><option value="在租" ${r&&r.status==='在租'?'selected':''}>在租</option><option value="空置" ${r&&r.status==='空置'?'selected':''}>空置</option><option value="待清洁" ${r&&r.status==='待清洁'?'selected':''}>待清洁</option></select></div></div>
-      <div class="fa"><button type="button" class="btn btn-o" onclick="cm()">取消</button><button type="submit" class="btn btn-p">${r?'保存修改':'添加房间'}</button></div>
-    </form></div>`);
-}
-function srf2(e,id) {
-  e.preventDefault(); const d=Object.fromEntries(new FormData(e.target));
-  d.rent=parseFloat(d.rent)||0;
-  if(id) { S.ur(id,d); st('房间已更新','s'); } else { S.ar(d); st('房间添加成功','s'); }
-  cm(); rr($('main'));
-}
-
-// ===== TRANSACTIONS =====
-function rtx(m) {
-  m.innerHTML = `<div class="ph"><div><h2>收支流水</h2><div class="sub">共 ${S.gtx().length} 笔记录</div></div><button class="btn btn-p" onclick="stxf()">+ 记一笔</button></div>
-    <div class="pb"><div class="card">
-      <div class="fl">
-        <select class="fc" id="txf1" onchange="rtxt()"><option value="all">全部</option><option value="收入">收入</option><option value="支出">支出</option></select>
-        <input class="fc" placeholder="搜索交易对方..." id="txsq" oninput="rtxt()" style="min-width:160px">
-        <input class="fc" type="month" id="txf3" onchange="rtxt()" style="min-width:160px">
-        <button class="btn btn-s btn-o" onclick="document.getElementById('txf1').value='all';document.getElementById('txsq').value='';document.getElementById('txf3').value='';rtxt()">清除</button>
-      </div>
-      <div class="tc" id="txtc"></div>
-    </div></div>`;
-  rtxt();
-}
-function rtxt() {
-  const f1=$('txf1')?.value||'all', sq=($('txsq')?.value||'').toLowerCase(), f3=$('txf3')?.value||'';
-  let tx = S.gtx().slice().reverse();
-  if(f1!=='all') tx=tx.filter(t=>t.收===f1);
-  if(sq) tx=tx.filter(t=>(t.对方||'').toLowerCase().includes(sq));
-  if(f3) tx=tx.filter(t=>(t.交易时间||'').startsWith(f3));
-  const c=$('txtc'); if(!c)return;
-  c.innerHTML = tx.length===0 ? '<div class="es"><div class="ic">💰</div><h4>暂无收支记录</h4></div>' :
-    `<table><thead><tr><th>交易时间</th><th>交易对方</th><th>商品</th><th>收/支</th><th>金额(元)</th><th>水费</th><th>电费</th><th>备注</th><th>操作</th></tr></thead><tbody>
-      ${tx.map(t => `<tr>
-        <td class="fb" style="white-space:nowrap">${t.交易时间||'-'}</td>
-        <td>${t.对方||'-'}</td>
-        <td class="tm" style="max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${t.商品||''}">${t.商品||'-'}</td>
-        <td><span class="tag ${t.收==='收入'?'tg':'tr'}">${t.收||'-'}</span></td>
-        <td class="tr2 fb ${t.收==='收入'?'ts':'td'}">${t.金额?fm(t.金额):'-'}</td>
-        <td class="tr2">${t.水费?fm(t.水费):'-'}</td>
-        <td class="tr2">${t.电费?fm(t.电费):'-'}</td>
-        <td class="tm">${t.备注&&t.备注!=='/'?t.备注:'-'}</td>
-        <td><button class="btn btn-s btn-o" onclick="etx('${t.id}')">编辑</button> <button class="btn btn-s btn-o" onclick="dtx('${t.id}')" style="color:var(--danger);border-color:var(--danger);">删除</button></td>
-      </tr>`).join('')}
-    </tbody></table>`;
-}
-function stxf() {
-  const now = new Date();
-  const ts = now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+' '+now.getHours()+':'+now.getMinutes();
-  om(`<div class="mh"><h3>记一笔</h3><button class="btn-i" onclick="cm()">✕</button></div>
-    <div class="mb"><form id="txfm" onsubmit="stxf2(event)">
-      <div class="fr"><div class="fg"><label>交易时间 *</label><input class="fc" type="text" name="交易时间" value="${ts}" required placeholder="2025-09-09 12:37"></div>
-      <div class="fg"><label>交易类</label><select class="fc" name="交易类"><option value="转账">转账</option><option value="现金">现金</option><option value="支付宝">支付宝</option></select></div></div>
-      <div class="fr"><div class="fg"><label>交易对方</label><input class="fc" name="对方" placeholder="租户名"></div>
-      <div class="fg"><label>商品</label><input class="fc" name="商品" placeholder="转账备注:..."></div></div>
-      <div class="fr"><div class="fg"><label>收/支 *</label><select class="fc" name="收" required><option value="收入">收入</option><option value="支出">支出</option></select></div>
-      <div class="fg"><label>金额(元) *</label><input class="fc" type="number" name="金额" min="0" step="0.01" required></div></div>
-      <div class="fr"><div class="fg"><label>水费</label><input class="fc" type="number" name="水费" value="0" min="0" step="0.01"></div>
-      <div class="fg"><label>电费</label><input class="fc" type="number" name="电费" value="0" min="0" step="0.01"></div></div>
-      <div class="fg"><label>备注</label><input class="fc" name="备注"></div>
-      <div class="fa"><button type="button" class="btn btn-o" onclick="cm()">取消</button><button type="submit" class="btn btn-p">保存</button></div>
-    </form></div>`);
-}
-function stxf2(e) {
-  e.preventDefault(); const d=Object.fromEntries(new FormData(e.target));
-  d.金额=parseFloat(d.金额)||0; d.水费=parseFloat(d.水费)||0; d.电费=parseFloat(d.电费)||0;
-  d.支付方式=''; d.状态=d.收==='收入'?'已存入零钱':'对方已收钱'; d.交易单号=''; d.商户单号='';
-  d.备注=d.备注||'';
-  S.atx(d); cm(); st('记录已保存','s'); rtxt();
-}
-function dtx(id) { if(!confirm('确认删除？'))return; S.dtx(id); st('已删除','i'); rtxt(); }
-function etx(id) {
-  const r = S.gtx().find(x => x.id === id); if(!r)return;
-  om(`<div class="mh"><h3>编辑收支记录</h3><button class="btn-i" onclick="cm()">✕</button></div>
-    <div class="mb"><form id="txfm" onsubmit="etx2(event,'${id}')">
-      <div class="fr"><div class="fg"><label>交易时间 *</label><input class="fc" type="text" name="交易时间" value="${r.交易时间||''}" required></div>
-      <div class="fg"><label>交易类</label><select class="fc" name="交易类"><option value="转账" ${r.交易类==='转账'?'selected':''}>转账</option><option value="现金" ${r.交易类==='现金'?'selected':''}>现金</option><option value="支付宝" ${r.交易类==='支付宝'?'selected':''}>支付宝</option></select></div></div>
-      <div class="fr"><div class="fg"><label>交易对方</label><input class="fc" name="对方" value="${r.对方||''}"></div>
-      <div class="fg"><label>商品</label><input class="fc" name="商品" value="${r.商品||''}"></div></div>
-      <div class="fr"><div class="fg"><label>收/支 *</label><select class="fc" name="收" required><option value="收入" ${r.收==='收入'?'selected':''}>收入</option><option value="支出" ${r.收==='支出'?'selected':''}>支出</option></select></div>
-      <div class="fg"><label>金额(元) *</label><input class="fc" type="number" name="金额" value="${r.金额||0}" min="0" step="0.01" required></div></div>
-      <div class="fr"><div class="fg"><label>水费</label><input class="fc" type="number" name="水费" value="${r.水费||0}" min="0" step="0.01"></div>
-      <div class="fg"><label>电费</label><input class="fc" type="number" name="电费" value="${r.电费||0}" min="0" step="0.01"></div></div>
-      <div class="fg"><label>备注</label><input class="fc" name="备注" value="${(r.备注||'')==='/'?'':r.备注||''}"></div>
-      <div class="fa"><button type="button" class="btn btn-o" onclick="cm()">取消</button><button type="submit" class="btn btn-p">保存修改</button></div>
-    </form></div>`);
-}
-function etx2(e,id) {
-  e.preventDefault(); const d=Object.fromEntries(new FormData(e.target));
-  d.金额=parseFloat(d.金额)||0; d.水费=parseFloat(d.水费)||0; d.电费=parseFloat(d.电费)||0;
-  d.备注=d.备注||'';
-  S.ul(id,d); cm(); st('记录已更新','s'); rtxt();
-}
-
-// ===== LEDGER (流水台账) =====
-// 数据字段：交易时间、交易类、交易对方、商品、收/支、金额(元)、支付方式、当前状态、交易单号、商户单号、备注、其中水费、其中电费
-function rlg(m) {
-  const ledger = S.gl();
-  m.innerHTML = `<div class="ph"><div><h2>流水台账</h2><div class="sub">共 ${ledger.length} 笔记录 · 从微信/Excel 直接粘贴</div></div><div class="bg"><button class="btn btn-p" onclick="slg()">📋 粘贴录入</button></div></div>
-    <div class="pb"><div class="card">
-      <div class="fl">
-        <input class="fc" placeholder="搜索交易对方/商品..." id="lgs" oninput="rlgt()" style="min-width:200px">
-        <input class="fc" type="month" id="lgm" onchange="rlgt()" style="min-width:160px">
-      </div>
-      <div class="tc" id="lgc"></div>
-    </div></div>`;
-  rlgt();
-}
-function rlgt() {
-  const q = ($('lgs')?.value||'').toLowerCase();
-  const mf = $('lgm')?.value||'';
-  let ledger = S.gl();
-  if(q) ledger = ledger.filter(r => ((r.对方||'')+(r.商品||'')+(r.备注||'')).toLowerCase().includes(q));
-  if(mf) ledger = ledger.filter(r => (r.交易时间||'').startsWith(mf));
-  const c = $('lgc'); if(!c)return;
-  if(ledger.length===0) {
-    c.innerHTML = '<div class="es"><div class="ic">📒</div><h4>暂无台账记录</h4><p class="tm">点击右上角「粘贴录入」从微信/Excel 批量粘贴</p></div>';
-    return;
-  }
-  // 按交易时间倒序
-  const sorted = [...ledger].sort((a,b) => (b.交易时间||'').localeCompare(a.交易时间||'') || a.id.localeCompare(b.id));
-  c.innerHTML = `<div class="tc"><table><thead><tr>
-    <th>交易时间</th><th>交易类</th><th>交易对方</th><th>商品</th><th>收/支</th><th class="tr2">金额(元)</th>
-    <th>支付方式</th><th>当前状态</th><th>交易单号</th><th>商户单号</th><th>备注</th><th>水费</th><th>电费</th><th>操作</th>
-  </tr></thead><tbody>
-    ${sorted.map(r => `<tr>
-      <td class="fb" style="white-space:nowrap">${r.交易时间||'-'}</td>
-      <td>${r.交易类||'-'}</td>
-      <td>${r.对方||'-'}</td>
-      <td>${r.商品||'-'}</td>
-      <td><span class="tag ${(r.收||'')==='收入'?'tg':'tr'}">${r.收||'-'}</span></td>
-      <td class="tr2 fb ${(r.收||'')==='收入'?'ts':'td'}">${r.金额?fm(r.金额):'-'}</td>
-      <td>${r.支付方式||'-'}</td>
-      <td>${r.状态||'-'}</td>
-      <td style="font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="${r.交易单号||''}">${r.交易单号||'-'}</td>
-      <td style="font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="${r.商户单号||''}">${r.商户单号||'-'}</td>
-      <td class="tm" style="max-width:150px;overflow:hidden;text-overflow:ellipsis" title="${r.备注||''}">${r.备注||'-'}</td>
-      <td class="tr2">${r.水费?fm(r.水费):'-'}</td>
-      <td class="tr2">${r.电费?fm(r.电费):'-'}</td>
-      <td><button class="btn btn-s btn-o" onclick="elg('${r.id}')">编辑</button> <button class="btn btn-s btn-o" onclick="dlg('${r.id}')" style="color:var(--danger);border-color:var(--danger);">删除</button></td>
-    </tr>`).join('')}
-  </tbody></table></div>`;
-}
-function elg(id) {
-  const r = S.gl().find(x => x.id === id); if(!r)return;
-  om(`<div class="mh"><h3>编辑台账记录</h3><button class="btn-i" onclick="cm()">✕</button></div>
-    <div class="mb"><form id="lgfm" onsubmit="elg2(event,'${id}')">
-      <div class="fr"><div class="fg"><label>交易时间 *</label><input class="fc" type="text" name="交易时间" value="${r.交易时间||''}" required></div>
-      <div class="fg"><label>交易类</label><select class="fc" name="交易类"><option value="转账" ${r.交易类==='转账'?'selected':''}>转账</option><option value="现金" ${r.交易类==='现金'?'selected':''}>现金</option><option value="支付宝" ${r.交易类==='支付宝'?'selected':''}>支付宝</option></select></div></div>
-      <div class="fr"><div class="fg"><label>交易对方</label><input class="fc" name="对方" value="${r.对方||''}"></div>
-      <div class="fg"><label>商品</label><input class="fc" name="商品" value="${r.商品||''}"></div></div>
-      <div class="fr"><div class="fg"><label>收/支 *</label><select class="fc" name="收" required><option value="收入" ${r.收==='收入'?'selected':''}>收入</option><option value="支出" ${r.收==='支出'?'selected':''}>支出</option></select></div>
-      <div class="fg"><label>金额(元) *</label><input class="fc" type="number" name="金额" value="${r.金额||0}" min="0" step="0.01" required></div></div>
-      <div class="fr"><div class="fg"><label>支付方式</label><input class="fc" name="支付方式" value="${r.支付方式||''}"></div>
-      <div class="fg"><label>当前状态</label><input class="fc" name="状态" value="${r.状态||''}"></div></div>
-      <div class="fr"><div class="fg"><label>交易单号</label><input class="fc" name="交易单号" value="${r.交易单号||''}"></div>
-      <div class="fg"><label>商户单号</label><input class="fc" name="商户单号" value="${r.商户单号||''}"></div></div>
-      <div class="fr"><div class="fg"><label>水费</label><input class="fc" type="number" name="水费" value="${r.水费||0}" min="0" step="0.01"></div>
-      <div class="fg"><label>电费</label><input class="fc" type="number" name="电费" value="${r.电费||0}" min="0" step="0.01"></div></div>
-      <div class="fg"><label>备注</label><input class="fc" name="备注" value="${(r.备注||'')==='/'?'':r.备注||''}"></div>
-      <div class="fa"><button type="button" class="btn btn-o" onclick="cm()">取消</button><button type="submit" class="btn btn-p">保存修改</button></div>
-    </form></div>`);
-}
-function elg2(e,id) {
-  e.preventDefault(); const d=Object.fromEntries(new FormData(e.target));
-  d.金额=parseFloat(d.金额)||0; d.水费=parseFloat(d.水费)||0; d.电费=parseFloat(d.电费)||0;
-  d.备注=d.备注||'';
-  S.ul(id,d); cm(); st('记录已更新','s'); rlgt();
-}
-function dlg(id) { if(!confirm('确认删除这条台账记录？'))return; S.dl(id); st('已删除','i'); rlgt(); }
-function slg() {
-  om(`<div class="mh"><h3>📋 批量粘贴录入</h3><button class="btn-i" onclick="cm()">✕</button></div>
-    <div class="mb">
-      <div style="margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.6;">
-        <strong>格式说明：</strong>从微信账单或 Excel 复制整行数据直接粘贴，<strong>列顺序必须与下表一致</strong>。<br>
-        每行一条记录，用 <strong>Tab</strong> 分隔列。<br>
-        <div style="margin:8px 0;padding:8px;background:var(--bg);border-radius:4px;font-size:12px;font-family:monospace;">
-          列顺序：交易时间 | 交易类 | 交易对方 | 商品 | 收/支 | 金额(元) | 支付方式 | 当前状态 | 交易单号 | 商户单号 | 备注 | 其中水费 | 其中电费<br>
-          示例：<br>
-          2025-10-23 7:18:10\t转账\t张三\t转账备注:9月房租\t收入\t¥1,500.00\t零钱\t已存入零钱\t123456789\t/\t/\t30\t49
-        </div>
-      </div>
-      <div class="fg"><label>粘贴数据</label>
-        <textarea class="fc" id="lgt" rows="10" style="font-family:monospace;font-size:13px;" placeholder="从微信账单或 Excel 复制后粘贴到这里..."></textarea>
-      </div>
-      <div class="fa"><button type="button" class="btn btn-o" onclick="cm()">取消</button><button type="button" class="btn btn-p" onclick="slg2()">确认导入</button></div>
-    </div>`);
-}
-function slg2() {
-  const text = $('lgt')?.value.trim();
-  if(!text) { st('请先粘贴数据','e'); return; }
-  const rows = text.split('\n').filter(r => r.trim());
-  let count = 0, errors = [];
-  rows.forEach((row, idx) => {
-    let cols = row.split('\t').map(c => c.trim());
-    if(cols.length < 6) { errors.push('第'+(idx+1)+'行: 列数不足，需要至少6列'); return; }
-    const 交易时间 = cols[0];
-    const 交易类 = cols[1]||'';
-    const 对方 = cols[2]||'';
-    const 商品 = cols[3]||'';
-    const 收 = cols[4]||'';
-    // 解析金额：去掉¥和逗号
-    let 金额 = 0;
-    try { 金额 = parseFloat(cols[5].replace(/[¥,]/g,'')) || 0; } catch(e) {}
-    const 支付方式 = cols[6]||'';
-    const 状态 = cols[7]||'';
-    const 交易单号 = cols[8]||'';
-    const 商户单号 = cols[9]||'';
-    const 备注 = cols[10]||'';
-    let 水费 = 0, 电费 = 0;
-    if(cols.length > 11) { try { 水费 = parseFloat(cols[11].replace(/[¥,]/g,'')) || 0; } catch(e) {} }
-    if(cols.length > 12) { try { 电费 = parseFloat(cols[12].replace(/[¥,]/g,'')) || 0; } catch(e) {} }
-    if(!交易时间) { errors.push('第'+(idx+1)+'行: 交易时间为空'); return; }
-    S.al({ 交易时间, 交易类, 对方, 商品, 收, 金额, 支付方式, 状态, 交易单号, 商户单号, 备注, 水费, 电费 });
-    count++;
-  });
-  cm();
-  if(count > 0) st('成功导入 '+count+' 条记录','s');
-  if(errors.length) st('导入完成，'+errors.length+' 条失败','i');
-  rlgt();
-}
-
-// ===== UTILITIES =====
-function ru(m) {
-  const s=S.sum(), bills=S.gb();
-  const tx = S.gtx();
-  
-  // 从交易记录中直接计算水电费汇总
-  const water_income = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.水费||0),0);
-  const elec_income = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.电费||0),0);
-  const water_expense = tx.filter(x=>x.收==='支出').reduce((s,x)=>s+(x.水费||0),0);
-  const elec_expense = tx.filter(x=>x.收==='支出').reduce((s,x)=>s+(x.电费||0),0);
-  
-  // 按楼栋分配水电费收入
-  const detail = {};
-  // 先初始化支出（从抄表记录）
-  bills.forEach(b => {
-    const k=b.building+'-'+b.type;
-    if(!detail[k]) detail[k]={income:0,expense:0};
-  });
-  bills.forEach(b => {
-    const k=b.building+'-'+b.type;
-    if(detail[k]) detail[k].expense += b.amount;
-  });
-  // 按租户所在楼栋分配水电费收入
-  tx.filter(t=>t.收==='收入'&&(t.水费||t.电费)).forEach(t => {
-    const tenant = S.gt().find(x => x.name === t.对方);
-    const room = tenant ? S.grm(tenant.roomId) : null;
-    const building = room ? room.building : '305栋';
-    if(t.电费) {
-      const k = building+'-电费';
-      if(!detail[k]) detail[k]={income:0,expense:0};
-      detail[k].income += t.电费||0;
-    }
-    if(t.水费) {
-      const k = building+'-水费';
-      if(!detail[k]) detail[k]={income:0,expense:0};
-      detail[k].income += t.水费||0;
-    }
-  });
-
-  m.innerHTML = `<div class="ph"><div><h2>水电费管理</h2><div class="sub">月度抄表 · 毛利分析</div></div><button class="btn btn-p" onclick="sbf()">+ 录入抄表</button></div>
-    <div class="pb">
-      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));">
-        <div class="sc"><div class="l">水费收入</div><div class="v">${fm(water_income)}</div></div>
-        <div class="sc"><div class="l">电费收入</div><div class="v">${fm(elec_income)}</div></div>
-        <div class="sc red"><div class="l">水电费支出</div><div class="v">${fm(s.ue)}</div></div>
-        <div class="sc green"><div class="l">水电费毛利</div><div class="v">${fm(s.up)}</div><div class="c up">利润率 ${s.ue>0?Math.round(s.up/s.ue*100):0}%</div></div>
-      </div>
-      <div class="card"><div class="ch"><h3>水电费毛利明细</h3></div>
-        <div class="tc"><table><thead><tr><th>项目</th><th>收入</th><th>支出</th><th>毛利</th><th>利润率</th></tr></thead><tbody>
-          ${Object.keys(detail).map(k => { const d=detail[k]; const p=d.income-d.expense; const m=d.expense>0?p/d.expense*100:0; return `<tr><td class="fb">${k}</td><td>${fm(d.income)}</td><td>${fm(d.expense)}</td><td class="fb ${p>=0?'ts':'td'}">${fm(p)}</td><td><span class="tag ${p>=0?'tg':'tr'}">${m.toFixed(1)}%</span></td></tr>`; }).join('')}
-        </tbody></table></div>
-      </div>
-      <div class="card"><div class="ch"><h3>抄表记录</h3></div>
-        <div class="tc"><table><thead><tr><th>月份</th><th>楼栋</th><th>类型</th><th>用量</th><th>金额</th></tr></thead><tbody>
-          ${bills.slice().reverse().map(b => `<tr><td>${ml(b.month)}</td><td>${b.building}</td><td><span class="tag tb">${b.type}</span></td><td>${b.usage} ${b.type==='电费'?'度':'吨'}</td><td>${fm(b.amount)}</td></tr>`).join('')}
-          ${bills.length===0?'<tr><td colspan="5" class="tc2 tm">暂无数据</td></tr>':''}
-        </tbody></table></div>
-      </div>
-    </div>`;
-}
-function sbf() {
-  om(`<div class="mh"><h3>录入抄表</h3><button class="btn-i" onclick="cm()">✕</button></div>
-    <div class="mb"><form id="bfm" onsubmit="sbf2(event)">
-      <div class="fr"><div class="fg"><label>月份 *</label><input class="fc" type="month" name="month" value="${new Date().toISOString().slice(0,7)}" required></div>
-      <div class="fg"><label>楼栋 *</label><select class="fc" name="building" required><option value="305栋">305栋</option><option value="106栋">106栋</option></select></div></div>
-      <div class="fr"><div class="fg"><label>类型 *</label><select class="fc" name="type" required><option value="电费">电费</option><option value="水费">水费</option></select></div>
-      <div class="fg"><label>用量</label><input class="fc" type="number" name="usage" value="0" min="0" step="0.01"></div></div>
-      <div class="fg"><label>金额 *</label><input class="fc" type="number" name="amount" min="0" step="0.01" required></div>
-      <div class="fa"><button type="button" class="btn btn-o" onclick="cm()">取消</button><button type="submit" class="btn btn-p">保存</button></div>
-    </form></div>`);
-}
-function sbf2(e) {
-  e.preventDefault(); const d=Object.fromEntries(new FormData(e.target));
-  d.usage=parseFloat(d.usage)||0; d.amount=parseFloat(d.amount)||0;
-  S.ab(d); cm(); st('抄表记录已保存','s'); ru($('main'));
-}
-
-// ===== DEPOSITS =====
-function rdp(m) {
-  const s=S.sum(), t=S.gt();
-  m.innerHTML = `<div class="ph"><div><h2>押金管理</h2><div class="sub">押金总额 ${fm(s.dep)} · 在管 ${fm(s.ud)} · 已退 ${fm(s.rd)}</div></div></div>
-    <div class="pb">
-      <div class="grid">
-        <div class="sc"><div class="l">押金总额</div><div class="v">${fm(s.dep)}</div><div class="c">${t.length} 位租户</div></div>
-        <div class="sc green"><div class="l">在管押金（未退）</div><div class="v">${fm(s.ud)}</div><div class="c up">${t.filter(x=>!x.depositReturned).length} 位在租租户</div></div>
-        <div class="sc yellow"><div class="l">已退还押金</div><div class="v">${fm(s.rd)}</div><div class="c">${t.filter(x=>x.depositReturned).length} 位已退租户</div></div>
-      </div>
-      <div class="card"><div class="ch"><h3>押金明细</h3></div>
-        <div class="tc"><table><thead><tr><th>租户</th><th>房间</th><th>押金金额</th><th>状态</th><th>入住</th><th>退租</th></tr></thead><tbody>
-          ${t.map(x => `<tr><td class="fb">${x.name}</td><td>${rn(x.roomId)}</td><td class="fb">${fm(x.deposit)}</td><td><span class="tag ${x.depositReturned?'tg2':'tg'}">${x.depositReturned?'已退还':'在管'}</span></td><td>${fd(x.startDate)}</td><td>${fd(x.endDate)}</td></tr>`).join('')}
-          ${t.length===0?'<tr><td colspan="6" class="tc2 tm">暂无数据</td></tr>':''}
-        </tbody></table></div>
-      </div>
-    </div>`;
-}
-
-// ===== REPORTS =====
-function rrp(m) {
-  const s=S.sum(), tx=S.gtx(), t=S.gt();
-  const ci={}, ce={};
-  tx.forEach(x => { if(x.收==='收入') ci[x.商品]=(ci[x.商品]||0)+x.金额; else ce[x.商品]=(ce[x.商品]||0)+x.金额; });
-  m.innerHTML = `<div class="ph"><div><h2>报表分析</h2><div class="sub">数据周期：2025年9月 ~ 至今</div></div></div>
-    <div class="pb">
-      <div class="card"><div class="ch"><h3>经营总览</h3></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div><table><thead><tr><th>指标</th><th class="tr2">金额</th></tr></thead><tbody>
-            <tr><td>总收入</td><td class="tr2 fb ts">${fm(s.ti)}</td></tr>
-            <tr><td>总支出</td><td class="tr2 fb td">${fm(s.te)}</td></tr>
-            <tr><td>净收入</td><td class="tr2 fb" style="color:${s.ni>=0?'var(--success)':'var(--danger)'}">${fm(s.ni)}</td></tr>
-            <tr><td>在租房间</td><td class="tr2">${s.ar} / ${s.tr}</td></tr>
-            <tr><td>空置率</td><td class="tr2">${s.vr}%</td></tr>
-          </tbody></table></div>
-          <div><table><thead><tr><th>指标</th><th class="tr2">金额</th></tr></thead><tbody>
-            <tr><td>水费收入</td><td class="tr2">${fm(s.wi_water)}</td></tr>
-            <tr><td>电费收入</td><td class="tr2">${fm(s.wi_elec)}</td></tr>
-            <tr><td>水电费支出</td><td class="tr2">${fm(s.ue)}</td></tr>
-            <tr><td>水电费毛利</td><td class="tr2 fb ${s.up>=0?'ts':'td'}">${fm(s.up)}</td></tr>
-            <tr><td>在管押金</td><td class="tr2">${fm(s.ud)}</td></tr>
-            <tr><td>累计租户</td><td class="tr2">${t.length} 位</td></tr>
-          </tbody></table></div>
-        </div>
-      </div>
-      <div class="grid" style="grid-template-columns:1fr 1fr;">
-        <div class="card"><div class="ch"><h3>收入构成</h3></div><div class="cc" style="height:220px"><canvas id="c4"></canvas></div></div>
-        <div class="card"><div class="ch"><h3>支出构成</h3></div><div class="cc" style="height:220px"><canvas id="c5"></canvas></div></div>
-      </div>
-      <div class="card"><div class="ch"><h3>月度明细</h3></div>
-        <div class="tc"><table><thead><tr><th>月份</th><th class="tr2">收入</th><th class="tr2">支出</th><th class="tr2">净额</th></tr></thead><tbody>
-          ${Object.keys(s.mm).sort().map(m => { const d=s.mm[m]; const n=d.i-d.e; return `<tr><td class="fb">${ml(m)}</td><td class="tr2 ts">${fm(d.i)}</td><td class="tr2 td">${fm(d.e)}</td><td class="tr2 fb ${n>=0?'ts':'td'}">${fm(n)}</td></tr>`; }).join('')}
-        </tbody></table></div>
-      </div>
-    </div>`;
-  setTimeout(() => {
-    ['c4','c5'].forEach(id => { const c=$(id); if(!c)return; if(charts[id])charts[id].destroy(); const d=id==='c4'?ci:ce; const l=Object.keys(d),v=Object.values(d); if(!l.length)return; const cl=['#1a73e8','#0f9d58','#f9ab00','#d93025','#9334e6','#e37400']; charts[id]=new Chart(c,{type:'doughnut',data:{labels:l,datasets:[{data:v,backgroundColor:cl.slice(0,l.length),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:ctx=>ctx.label+': '+fm(ctx.raw)}}}}}); });
-  }, 100);
-}
-
-// ===== BACKUP =====
-function rbk(m) {
-  const s=S.sum();
-  m.innerHTML = `<div class="ph"><div><h2>数据备份</h2><div class="sub">导出导入数据，跨设备迁移</div></div></div>
-    <div class="pb">
-      <div class="grid" style="grid-template-columns:1fr 1fr;">
-        <div class="card">
-          <div class="ch"><h3>📥 导入数据</h3></div>
-          <p class="tm" style="margin-bottom:16px;">从 JSON 文件恢复数据，会覆盖当前所有数据。</p>
-          <div class="fg"><label>选择 JSON 文件</label><input class="fc" type="file" id="if" accept=".json" onchange="hi(event)"></div>
-          <div id="ip" class="mt2"></div>
-        </div>
-        <div class="card">
-          <div class="ch"><h3>📤 导出数据</h3></div>
-          <p class="tm" style="margin-bottom:16px;">导出所有数据为 JSON 文件，用于备份或迁移。</p>
-          <div class="bg"><button class="btn btn-p" onclick="ej()">导出 JSON</button></div>
-          <div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:var(--rs);">
-            <div class="fb mb4">数据概览</div>
-            <div class="dr"><span class="dl">房间数</span><span class="dv">${S.gr().length}</span></div>
-            <div class="dr"><span class="dl">租户数</span><span class="dv">${S.gt().length}</span></div>
-            <div class="dr"><span class="dl">收支记录</span><span class="dv">${S.gtx().length}</span></div>
-            <div class="dr"><span class="dl">抄表记录</span><span class="dv">${S.gb().length}</span></div>
-            <div class="dr"><span class="dl">数据大小</span><span class="dv">${(new Blob([S.exp()]).size/1024).toFixed(1)} KB</span></div>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ch"><h3>💡 使用说明</h3></div>
-        <div style="font-size:14px;line-height:1.8;">
-          <p><strong>数据存储：</strong>所有数据存储在浏览器本地 (localStorage)，关闭页面不会丢失。</p>
-          <p><strong>跨设备使用：</strong>在 A 电脑导出 JSON → 上传到云盘/微信 → 在 B 电脑导入 JSON。</p>
-          <p><strong>部署到 GitHub Pages：</strong>将本文件上传到 GitHub 仓库，开启 Pages 即可在任何设备访问。</p>
-          <p><strong>数据重置：</strong>在浏览器控制台执行 <code>localStorage.removeItem('rentData')</code> 后刷新页面。</p>
-        </div>
-      </div>
-    </div>`;
-}
-function hi(e) {
-  const f=e.target.files[0]; if(!f)return;
-  const r=new FileReader();
-  r.onload=function(e) {
-    try {
-      const d=JSON.parse(e.target.result);
-      $('ip').innerHTML = `<div style="padding:12px;background:var(--success-bg);border-radius:var(--rs);">
-        <div class="fb ts">解析成功</div><div class="tm" style="font-size:13px;margin-top:4px;">房间:${d.rooms?.length||0} | 租户:${d.tenants?.length||0} | 收支:${d.txs?.length||0} | 抄表:${d.bills?.length||0}</div>
-        <button class="btn btn-p btn-s mt2" onclick="ci()">确认导入（覆盖当前数据）</button>
-        <button class="btn btn-o btn-s mt2" onclick="$('ip').innerHTML=''">取消</button>
-      </div>`;
-      window._id = d;
-    } catch(e) { $('ip').innerHTML = '<div class="td">文件格式错误</div>'; }
-  };
-  r.readAsText(f);
-}
-function ci() { if(window._id) { S.imp(window._id); st('数据导入成功！','s'); $('ip').innerHTML=''; window._id=null; } }
-function ej() {
-  const j=S.exp(); const b=new Blob([j],{type:'application/json'});
-  const u=URL.createObjectURL(b); const a=document.createElement('a');
-  a.href=u; a.download='租房数据_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
-  URL.revokeObjectURL(u); st('数据已导出','s');
-}
-
-// ===== INIT =====
+// 页面加载时初始化
 window.addEventListener('DOMContentLoaded', async () => {
   S.init();
-  // 尝试从云端同步
+  // 尝试从云端同步数据
   const loaded = await S.initCloud();
   if (!loaded) {
-    // 本地加载失败，使用默认数据
-    S.init();
+    console.log('Using local data');
   }
   r(window.location.hash.slice(1) || 'dashboard');
 });
-const ip = window.location.hash.slice(1) || 'dashboard';
-n(ip);
 </script>
 </body>
 </html>
