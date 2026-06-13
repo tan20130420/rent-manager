@@ -29,6 +29,7 @@ export default {
       'Content-Type': 'application/json'
     };
 
+    // 处理 CORS 预检请求
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
@@ -49,6 +50,7 @@ export default {
         );
 
         if (response.status === 404) {
+          // 文件不存在，返回空对象
           return new Response(
             JSON.stringify({
               rooms: [],
@@ -80,7 +82,7 @@ export default {
       try {
         const newData = await request.json();
 
-        // 获取当前文件的 SHA
+        // 获取当前文件的 SHA（用于更新）
         let sha = null;
         const getResponse = await fetch(
           `${GITHUB_API}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE}`,
