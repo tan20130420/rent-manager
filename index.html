@@ -794,8 +794,24 @@ function ru(m) {
   const detail = {};
   bills.forEach(b => { const k=b.building+'-'+b.type; if(!detail[k])detail[k]={income:0,expense:0}; detail[k].expense+=b.amount; });
   // income from transactions
-  S.gtx().filter(t=>t.收==='收入'&&(t.水费||t.电费)).forEach(t => { detail['305栋-电费']=detail['305栋-电费']||{income:0,expense:0}; detail['305栋-电费'].income+=t.电费||0; detail['305栋-水费']=detail['305栋-水费']||{income:0,expense:0}; detail['305栋-水费'].income+=t.水费||0; });
-  // default values
+  // 按租户所在楼栋分配水电费收入
+  S.gtx().filter(t=>t.收==='收入'&&(t.水费||t.电费)).forEach(t => {
+    // 通过交易对方名称查找租户，再找房间楼栋
+    const tenant = S.gt().find(x => x.name === t.对方);
+    const room = tenant ? S.grm(tenant.roomId) : null;
+    const building = room ? room.building : '305栋'; // 默认305栋
+    if(t.电费) {
+      const k = building+'-电费';
+      if(!detail[k]) detail[k]={income:0,expense:0};
+      detail[k].income += t.电费||0;
+    }
+    if(t.水费) {
+      const k = building+'-水费';
+      if(!detail[k]) detail[k]={income:0,expense:0};
+      detail[k].income += t.水费||0;
+    }
+  });
+  // default values（从已有数据中汇总实际值，若没有则用默认）
   if(!detail['305栋-电费']) detail['305栋-电费']={income:3525.10,expense:0};
   if(!detail['305栋-水费']) detail['305栋-水费']={income:880,expense:0};
   if(!detail['106栋-电费']) detail['106栋-电费']={income:880,expense:0};
