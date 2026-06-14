@@ -679,9 +679,9 @@ function ru(m) {
   const bills = S.gb();
   const tx = S.gtx();
   
-  // 收入：从收支记录中汇总水费/电费
-  const water_income = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.水费||0),0);
-  const elec_income = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.电费||0),0);
+  // 收入：从收支记录中汇总所有水费/电费（不论收支方向）
+  const water_income = tx.reduce((s,x)=>s+(x.水费||0),0);
+  const elec_income = tx.reduce((s,x)=>s+(x.电费||0),0);
   
   // 按楼栋分配
   const detail = {};
@@ -691,8 +691,8 @@ function ru(m) {
     if(!detail[k]) detail[k]={income:0,expense:0};
     detail[k].expense += b.amount;
   });
-  // 收入：按楼栋分配
-  tx.filter(t=>t.收==='收入'&&(t.水费||t.电费)).forEach(t => {
+  // 收入：按楼栋分配（不论收支方向）
+  tx.filter(t=>(t.水费||t.电费)).forEach(t => {
     const tenant = S.gt().find(x => x.name === t.对方);
     const room = tenant ? S.grm(tenant.roomId) : null;
     const building = room ? room.building : '305栋';
