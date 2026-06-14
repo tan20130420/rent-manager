@@ -241,33 +241,24 @@ const S = {
     if(!this._d.nid) this._d.nid = {r:10,t:100,b:100,l:100};
     if(this._d.nid.l === undefined) this._d.nid.l = 100;
   },
-  // 云端优先同步：直接从 GitHub 读取 data.json
+  // 每次打开页面强制从云端拉取最新数据，云端是唯一数据源
   async initCloud() {
     if (!ENABLE_CLOUD_SYNC) { this._migrateAndSeed(); this._saveLocal(); return false; }
     try {
-      // 用 raw URL 直接读取（自动 UTF-8，无需认证）
-      const resp = await fetch(GH_RAW_URL + '?t=' + Date.now(), { signal: AbortSignal.timeout(8000) });
+      const resp = await fetch(GH_RAW_URL + '?t=' + Date.now(), { signal: AbortSignal.timeout(10000) });
       if (resp.ok) {
         const cloudData = await resp.json();
-        if (cloudData && cloudData.rooms && cloudData.ledger && cloudData.ledger.length > 0) {
+        if (cloudData && cloudData.rooms) {
           this._d = cloudData;
           this._saveLocal();
-          this._syncStatus = 'synced';
-          console.log('Cloud sync OK: ' + cloudData.ledger.length + ' records, ' + (cloudData.tenants||[]).length + ' tenants');
-          return true;
-        } else if (cloudData && cloudData.rooms) {
-          if (this._d.ledger && this._d.ledger.length > 0) {
-            console.log('Cloud empty, uploading ' + this._d.ledger.length + ' local records');
-            await this._pushCloud();
-          }
+          console.log('Cloud sync OK: ' + (cloudData.ledger||[]).length + ' records, ' + (cloudData.tenants||[]).length + ' tenants');
           return true;
         }
-      } else {
-        console.log('Cloud fetch HTTP ' + resp.status + ', using local data');
       }
     } catch(e) {
-      console.log('Cloud fetch error: ' + e.message + ', using local data');
+      console.log('Cloud error: ' + e.message);
     }
+    // 云端不可用时用本地缓存兜底（离线时至少能用）
     this._migrateAndSeed();
     this._saveLocal();
     return false;
@@ -856,14 +847,13 @@ function idt() {
   reader.readAsText(file);
 }
 
-// 页面加载时初始化
+// 页面加载时初始化：先从云端拉取数据，再渲染页面
 window.addEventListener('DOMContentLoaded', async () => {
+  // 先用本地缓存快速占位（显示骨架数据）
   S.init();
-  // 尝试从云端同步数据
+  // 强制从云端拉取最新数据
   const loaded = await S.initCloud();
-  if (!loaded) {
-    console.log('Using local data');
-  }
+  // 渲染页面（云端或本地数据）
   r(window.location.hash.slice(1) || 'dashboard');
 });
 </script>
