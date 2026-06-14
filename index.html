@@ -728,7 +728,9 @@ function ru(m) {
       ${types.map(tp => {
         const k = b+'-'+tp;
         const di = detail[k] || {income:0,expense:0};
-        return `<tr><td>${tp}</td><td class="ts">${fm(di.income)}</td><td class="tr2">${fm(di.expense)}</td><td class="${di.income-di.expense>=0?'ts':'tr2'}">${fm(di.income-di.expense)}</td></tr>`;
+        const inc = di.income||0;
+        const exp = di.expense||0;
+        return '<tr><td>'+tp+'</td><td style="color:var(--success)">'+fm(inc)+'</td><td style="color:var(--danger)">'+fm(exp)+'</td><td style="color:'+(inc-exp>=0?'var(--success)':'var(--danger)')+'">'+fm(inc-exp)+'</td></tr>';
       }).join('')}
       </tbody></table>
     `).join('')}
