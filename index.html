@@ -285,6 +285,7 @@ const S = {
   _save() { 
     localStorage.setItem('rentData', JSON.stringify(this._d));
     // 异步上传到 GitHub（不阻塞 UI）
+    // 使用ASCII安全序列化，避免中文乱码
     if (ENABLE_CLOUD_SYNC && WORKER_URL) {
       fetch(WORKER_URL + '/api/data', {
         method: 'POST',
