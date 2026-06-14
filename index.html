@@ -245,7 +245,7 @@ const S = {
   async initCloud() {
     if (!ENABLE_CLOUD_SYNC) { this._migrateAndSeed(); this._saveLocal(); return false; }
     try {
-      const resp = await fetch(GH_RAW_URL + '?t=' + Date.now(), { signal: AbortSignal.timeout(10000) });
+      const resp = await fetch(GH_RAW_URL + '?t=' + Date.now(), { cache: 'no-store', signal: AbortSignal.timeout(10000) });
       if (resp.ok) {
         const cloudData = await resp.json();
         if (cloudData && cloudData.rooms) {
