@@ -715,7 +715,7 @@ function ru(m) {
   const types = ['电费','水费'];
   
   m.innerHTML = `
-    <div class="ph"><h2>水电费管理</h2><button class="btn" onclick="oab()">+ 添加抄表</button></div>
+    <div class="ph"><h2>水电费管理 <small style="font-size:11px;color:#999">v2.6</small></h2><button class="btn" onclick="oab()">+ 添加抄表</button></div>
     <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));">
       <div class="sc"><div class="l">水费收入</div><div class="v">${fm(water_income)}</div></div>
       <div class="sc"><div class="l">电费收入</div><div class="v">${fm(elec_income)}</div></div>
