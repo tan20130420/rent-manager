@@ -236,10 +236,13 @@ const S = {
   },
   // 初始化：仅加载本地缓存作为临时数据（等云端数据回来后替换）
   init() {
-    // 不再读本地缓存，等云端数据
-    this._d = this._def();
+    const s = localStorage.getItem('rentData');
+    if (s) { try { this._d = JSON.parse(s); } catch(e) { this._d = this._def(); } }
+    else { this._d = this._def(); }
+    if(!this._d.ledger) this._d.ledger = [];
+    if(!this._d.nid) this._d.nid = {r:10,t:100,b:100,l:100};
+    if(this._d.nid.l === undefined) this._d.nid.l = 100;
   },
-  // 每次从云端拉取数据，云端是唯一数据源
   async initCloud() {
     try {
       const resp = await fetch(GH_RAW_URL + '?t=' + Date.now(), { cache: 'no-store', signal: AbortSignal.timeout(10000) });
@@ -247,6 +250,7 @@ const S = {
         const cloudData = await resp.json();
         if (cloudData && cloudData.rooms) {
           this._d = cloudData;
+          this._saveLocal();
           console.log('Cloud sync OK: ' + (cloudData.ledger||[]).length + ' records');
           return true;
         }
@@ -278,14 +282,12 @@ const S = {
       this._seed();
     }
   },
-  // 仅保存到本地（不上传云端）
   _saveLocal() {
-    // 不再缓存本地
+    localStorage.setItem('rentData', JSON.stringify(this._d));
   },
-  // 保存：同步推送云端
   _save() {
+    this._saveLocal();
     this._pushCloud();
-    this._cloudDirty = true;
   },
   // 异步推送到 GitHub（通过 GitHub API PUT data.json）
   async _pushCloud() {
