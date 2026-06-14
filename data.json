@@ -291,7 +291,80 @@
       "depositReturned": false
     }
   ],
-  "bills": [],
+  "bills": [
+    {
+      "id": "b1",
+      "month": "2025-09",
+      "building": "305栋",
+      "type": "电费",
+      "usage": 110,
+      "amount": 64.68
+    },
+    {
+      "id": "b2",
+      "month": "2025-10",
+      "building": "305栋",
+      "type": "电费",
+      "usage": 525,
+      "amount": 368.7
+    },
+    {
+      "id": "b3",
+      "month": "2025-11",
+      "building": "305栋",
+      "type": "电费",
+      "usage": 528,
+      "amount": 371.36
+    },
+    {
+      "id": "b4",
+      "month": "2025-12",
+      "building": "305栋",
+      "type": "电费",
+      "usage": 689,
+      "amount": 489.33
+    },
+    {
+      "id": "b5",
+      "month": "2026-01",
+      "building": "305栋",
+      "type": "电费",
+      "usage": 564,
+      "amount": 378.33
+    },
+    {
+      "id": "b6",
+      "month": "2026-02",
+      "building": "305栋",
+      "type": "电费",
+      "usage": 98,
+      "amount": 57.62
+    },
+    {
+      "id": "b7",
+      "month": "2026-03",
+      "building": "305栋",
+      "type": "电费",
+      "usage": 390,
+      "amount": 248.82
+    },
+    {
+      "id": "b8",
+      "month": "2026-04",
+      "building": "305栋",
+      "type": "电费",
+      "usage": 374,
+      "amount": 234.61
+    },
+    {
+      "id": "b9",
+      "month": "2026-05",
+      "building": "305栋",
+      "type": "电费",
+      "usage": 508,
+      "amount": 353.6
+    }
+  ],
   "ledger": [
     {
       "id": 1,
@@ -1801,7 +1874,7 @@
   "nid": {
     "r": 10,
     "t": 19,
-    "b": 100,
+    "b": 10,
     "l": 100
   }
 }
