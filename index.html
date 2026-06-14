@@ -1,1 +1,836 @@
-"<!DOCTYPE html>\n<html lang=\"zh-CN\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>\u79df\u623f\u7ecf\u8425\u7ba1\u7406\u7cfb\u7edf</title>\n<script src=\"https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js\"></script>\n<style>\n:root {\n  --primary: #1a73e8;\n  --primary-dark: #1557b0;\n  --primary-light: #e8f0fe;\n  --success: #0f9d58;\n  --success-bg: #e6f4ea;\n  --danger: #d93025;\n  --danger-bg: #fce8e6;\n  --warning: #f9ab00;\n  --warning-bg: #fef7e0;\n  --bg: #f0f2f5;\n  --surface: #ffffff;\n  --text: #202124;\n  --text2: #5f6368;\n  --text3: #9aa0a6;\n  --border: #dadce0;\n  --hover: #f1f3f4;\n  --w: 240px;\n  --r: 12px;\n  --rs: 8px;\n  --sh: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);\n  --shl: 0 4px 12px rgba(0,0,0,0.1);\n}\n* { margin: 0; padding: 0; box-sizing: border-box; }\nbody {\n  font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;\n  background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden;\n}\n.layout { display: flex; min-height: 100vh; }\n.sidebar {\n  position: fixed; left: 0; top: 0; bottom: 0; width: var(--w);\n  background: var(--surface); border-right: 1px solid var(--border);\n  z-index: 100; display: flex; flex-direction: column; transition: transform .2s;\n}\n.sidebar h1 { font-size: 18px; font-weight: 700; color: var(--primary); padding: 20px 24px; border-bottom: 1px solid var(--border); }\n.sidebar h1 small { display: block; font-size: 12px; font-weight: 400; color: var(--text2); margin-top: 2px; }\n.nav { flex: 1; padding: 12px 8px; overflow-y: auto; }\n.nav a {\n  display: flex; align-items: center; gap: 10px; padding: 10px 16px; margin-bottom: 2px;\n  border-radius: var(--rs); cursor: pointer; font-size: 14px; color: var(--text2);\n  text-decoration: none; transition: all .2s;\n}\n.nav a:hover { background: var(--hover); color: var(--text); }\n.nav a.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }\n.nav a .badge { margin-left: auto; font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 10px; font-weight: 600; }\n.main { margin-left: var(--w); flex: 1; min-height: 100vh; }\n.ph { padding: 24px 32px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }\n.ph h2 { font-size: 24px; font-weight: 600; }\n.ph .sub { font-size: 14px; color: var(--text2); margin-top: 4px; }\n.pb { padding: 24px 32px 40px; }\n.card { background: var(--surface); border-radius: var(--r); box-shadow: var(--sh); padding: 24px; margin-bottom: 20px; }\n.ch { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }\n.ch h3 { font-size: 16px; font-weight: 600; }\n.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }\n.sc {\n  background: var(--surface); border-radius: var(--r); padding: 20px;\n  box-shadow: var(--sh); border-left: 4px solid var(--primary); transition: transform .2s;\n}\n.sc:hover { transform: translateY(-2px); }\n.sc .l { font-size: 13px; color: var(--text2); margin-bottom: 4px; }\n.sc .v { font-size: 28px; font-weight: 700; line-height: 1.2; }\n.sc .c { font-size: 12px; margin-top: 4px; }\n.sc .c.up { color: var(--success); }\n.sc .c.down { color: var(--danger); }\n.sc.green { border-left-color: var(--success); }\n.sc.red { border-left-color: var(--danger); }\n.sc.yellow { border-left-color: var(--warning); }\n.tc { overflow-x: auto; }\ntable { width: 100%; border-collapse: collapse; font-size: 14px; }\nthead th { background: var(--bg); padding: 12px 16px; text-align: left; font-weight: 600; font-size: 12px; color: var(--text2); border-bottom: 2px solid var(--border); white-space: nowrap; }\ntbody td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }\ntbody tr:hover { background: var(--hover); }\n.tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }\n.tg { background: var(--success-bg); color: var(--success); }\n.tr { background: var(--danger-bg); color: var(--danger); }\n.tb { background: var(--primary-light); color: var(--primary); }\n.ty { background: var(--warning-bg); color: #e37400; }\n.tg2 { background: var(--bg); color: var(--text2); }\n.btn {\n  display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px; border-radius: var(--rs);\n  font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all .2s;\n}\n.btn-p { background: var(--primary); color: #fff; }\n.btn-p:hover { background: var(--primary-dark); box-shadow: var(--sh); }\n.btn-o { background: transparent; color: var(--primary); border: 1px solid var(--primary); }\n.btn-o:hover { background: var(--primary-light); }\n.btn-d { background: var(--danger); color: #fff; }\n.btn-d:hover { background: #c5221f; }\n.btn-s { padding: 4px 12px; font-size: 12px; }\n.btn-i { width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; border: none; cursor: pointer; background: transparent; color: var(--text2); }\n.btn-i:hover { background: var(--hover); color: var(--text); }\n.bg { display: flex; gap: 8px; flex-wrap: wrap; }\n.fg { margin-bottom: 16px; }\n.fg label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }\n.fc {\n  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--rs);\n  font-size: 14px; transition: border-color .2s; background: var(--surface);\n}\n.fc:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }\n.fr { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }\n.fa { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }\nselect.fc { appearance: auto; }\n.mo {\n  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none;\n  align-items: center; justify-content: center; backdrop-filter: blur(2px);\n}\n.mo.show { display: flex; }\n.mw {\n  background: var(--surface); border-radius: var(--r); width: 90%; max-width: 560px;\n  max-height: 85vh; overflow-y: auto; box-shadow: var(--shl); animation: mi .2s ease;\n}\n@keyframes mi { from { opacity: 0; transform: scale(.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }\n.mh { padding: 20px 24px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }\n.mh h3 { font-size: 18px; font-weight: 600; }\n.mb { padding: 20px 24px; }\n.mf { padding: 12px 24px 20px; display: flex; gap: 8px; justify-content: flex-end; }\n.cc { position: relative; height: 300px; width: 100%; }\n.es { text-align: center; padding: 60px 20px; color: var(--text2); }\n.es .ic { font-size: 48px; margin-bottom: 12px; opacity: .5; }\n.es h4 { font-size: 16px; margin-bottom: 8px; color: var(--text); }\n.toast {\n  position: fixed; top: 20px; right: 20px; z-index: 2000;\n  padding: 12px 20px; border-radius: var(--rs); color: #fff; font-size: 14px; font-weight: 500;\n  box-shadow: var(--shl); animation: ti .3s ease; max-width: 360px;\n}\n.toast.s { background: var(--success); }\n.toast.e { background: var(--danger); }\n.toast.i { background: var(--primary); }\n@keyframes ti { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }\n.mt { display: none; position: fixed; top: 12px; left: 12px; z-index: 101; width: 40px; height: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--rs); cursor: pointer; }\n.mt:hover { background: var(--hover); }\n@media (max-width: 768px) {\n  .sidebar { transform: translateX(-100%); }\n  .sidebar.open { transform: translateX(0); }\n  .mt { display: flex; }\n  .main { margin-left: 0; }\n  .ph { padding: 16px 16px 0; }\n  .pb { padding: 16px; }\n  .ph h2 { font-size: 20px; }\n  .grid { grid-template-columns: 1fr 1fr; }\n  .fr { grid-template-columns: 1fr; }\n  .mw { width: 95%; margin: 10px; }\n  .sc .v { font-size: 22px; }\n}\n@media (max-width: 480px) { .grid { grid-template-columns: 1fr; } .ph { flex-direction: column; align-items: flex-start; } }\n::-webkit-scrollbar { width: 6px; height: 6px; }\n::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }\n.tr2 { text-align: right; }\n.tc2 { text-align: center; }\n.ts { color: var(--success); }\n.td { color: var(--danger); }\n.tp { color: var(--primary); }\n.tm { color: var(--text2); }\n.fb { font-weight: 600; }\n.mt2 { margin-top: 8px; }\n.mt4 { margin-top: 16px; }\n.mb4 { margin-bottom: 16px; }\n.fb2 { display: flex; justify-content: space-between; align-items: center; }\n.fb3 { display: flex; }\n.g2 { gap: 8px; }\n.g4 { gap: 16px; }\n.fl {\n  display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; align-items: center;\n}\n.fl .fc { width: auto; min-width: 140px; }\n.dr { display: flex; padding: 8px 0; border-bottom: 1px solid var(--border); }\n.dr:last-child { border-bottom: none; }\n.dl { width: 120px; flex-shrink: 0; color: var(--text2); font-size: 13px; }\n.dv { flex: 1; font-weight: 500; }\n</style>\n</head>\n<body>\n\n<div class=\"layout\">\n  <button class=\"mt\" onclick=\"ts()\">\u2630</button>\n  <aside class=\"sidebar\" id=\"sidebar\">\n    <h1>\ud83c\udfe0 \u79df\u623f\u7ba1\u5bb6<small>\u4e8c\u623f\u4e1c\u7ecf\u8425\u7ba1\u7406\u7cfb\u7edf</small></h1>\n    <nav class=\"nav\" id=\"nav\">\n      <a class=\"active\" href=\"#dashboard\" onclick=\"n('dashboard')\">\ud83d\udcca \u4eea\u8868\u76d8</a>\n      <a href=\"#tenants\" onclick=\"n('tenants')\">\ud83d\udc65 \u79df\u6237\u7ba1\u7406 <span class=\"badge\" id=\"tb\">0</span></a>\n      <a href=\"#rooms\" onclick=\"n('rooms')\">\ud83c\udfe2 \u623f\u95f4\u7ba1\u7406 <span class=\"badge\" id=\"rb\">0</span></a>\n      <a href=\"#transactions\" onclick=\"n('transactions')\">\ud83d\udcb0 \u6536\u652f\u6d41\u6c34</a>\n      <a href=\"#ledger\" onclick=\"n('ledger')\">\ud83d\udcd2 \u6d41\u6c34\u53f0\u8d26</a>\n      <a href=\"#utilities\" onclick=\"n('utilities')\">\u26a1 \u6c34\u7535\u8d39\u7ba1\u7406</a>\n      <a href=\"#deposits\" onclick=\"n('deposits')\">\ud83d\udd12 \u62bc\u91d1\u7ba1\u7406</a>\n      <a href=\"#reports\" onclick=\"n('reports')\">\ud83d\udcc8 \u62a5\u8868\u5206\u6790</a>\n      <a href=\"#backup\" onclick=\"n('backup')\">\ud83d\udcbe \u6570\u636e\u5907\u4efd</a>\n    </nav>\n  </aside>\n  <main class=\"main\" id=\"main\"></main>\n</div>\n\n<div class=\"mo\" id=\"mo\" onclick=\"if(event.target===this)cm()\"><div class=\"mw\" id=\"mc\"></div></div>\n\n<script>\n// ===== CLOUDFLARE WORKERS CONFIG =====\nconst WORKER_URL = 'https://rent-manager.tan20130420.workers.dev';\nconst ENABLE_CLOUD_SYNC = true; // \u8bbe\u4e3a false \u5173\u95ed\u4e91\u540c\u6b65\n\n// ===== STORE =====\nconst S = {\n  _d: null,\n  _def() {\n    return {\n      rooms: [\n        {id:'r1',name:'305-1',building:'305\u680b',rent:500,status:'\u5728\u79df',cur:null},\n        {id:'r2',name:'305-2',building:'305\u680b',rent:700,status:'\u5728\u79df',cur:null},\n        {id:'r3',name:'305-3',building:'305\u680b',rent:700,status:'\u5728\u79df',cur:null},\n        {id:'r4',name:'305-5',building:'305\u680b',rent:600,status:'\u5728\u79df',cur:null},\n        {id:'r5',name:'305-6',building:'305\u680b',rent:800,status:'\u5728\u79df',cur:null},\n        {id:'r6',name:'106-2',building:'106\u680b',rent:600,status:'\u5728\u79df',cur:null},\n        {id:'r7',name:'106-3',building:'106\u680b',rent:600,status:'\u5728\u79df',cur:null},\n        {id:'r8',name:'106-5',building:'106\u680b',rent:350,status:'\u5728\u79df',cur:null},\n        {id:'r9',name:'106-6',building:'106\u680b',rent:800,status:'\u5728\u79df',cur:null},\n      ],\n      tenants: [],\n      bills: [],\n      ledger: [],\n      nid: {r:10,t:100,b:100,l:100}\n    };\n  },\n  init() {\n    const s = localStorage.getItem('rentData');\n    if (s) { try { this._d = JSON.parse(s); } catch(e) { this._d = this._def(); } }\n    else { this._d = this._def(); this._seed(); }\n    // \u517c\u5bb9\u65e7\u6570\u636e\uff1a\u5347\u7ea7\u65f6\u8865\u5145\u7f3a\u5931\u5b57\u6bb5\n    if(!this._d.ledger) this._d.ledger = [];\n    // \u8fc1\u79fb\u65e7\u7248txs\u6570\u636e\u5230ledger\n    if(this._d.txs && this._d.txs.length > 0 && this._d.ledger.length === 0) {\n      this._d.txs.forEach(t => {\n        this._d.ledger.push({\n          id: 'l' + (this._d.nid.l++),\n          \u4ea4\u6613\u65f6\u95f4: t.date + ' 0:00:00',\n          \u4ea4\u6613\u7c7b: '\u8f6c\u8d26',\n          \u5bf9\u65b9: t.tenantId ? (this.gtm(t.tenantId)?.name||'') : '',\n          \u5546\u54c1: t.note ? '\u8f6c\u8d26\u5907\u6ce8:'+t.note : '',\n          \u6536: t.type,\n          \u91d1\u989d: t.amount,\n          \u652f\u4ed8\u65b9\u5f0f: '',\n          \u72b6\u6001: t.type==='\u6536\u5165'?'\u5df2\u5b58\u5165\u96f6\u94b1':'\u5bf9\u65b9\u5df2\u6536\u94b1',\n          \u4ea4\u6613\u5355\u53f7: '',\n          \u5546\u6237\u5355\u53f7: '',\n          \u5907\u6ce8: t.note||'',\n          \u6c34\u8d39: t.wf||0,\n          \u7535\u8d39: t.ef||0\n        });\n      });\n      delete this._d.txs;\n    }\n    if(!this._d.nid) this._d.nid = {r:10,t:100,b:100,l:100};\n    if(this._d.nid.l === undefined) this._d.nid.l = 100;\n    this._save();\n  },\n  async initCloud() {\n    if (!ENABLE_CLOUD_SYNC || !WORKER_URL) return false;\n    try {\n      const resp = await fetch(WORKER_URL + '/api/data');\n      if (resp.ok) {\n        const cloudData = await resp.json();\n        if (cloudData && cloudData.rooms && cloudData.ledger && cloudData.ledger.length > 0) {\n          // \u4ec5\u5f53\u4e91\u7aef\u6709\u6570\u636e\u65f6\u624d\u8986\u76d6\u672c\u5730\n          this._d = cloudData;\n          localStorage.setItem('rentData', JSON.stringify(this._d));\n          console.log('Loaded data from cloud (' + cloudData.ledger.length + ' records)');\n          return true;\n        } else if (cloudData && cloudData.rooms && this._d.ledger && this._d.ledger.length > 0) {\n          // \u4e91\u7aef\u4e3a\u7a7a\u4f46\u672c\u5730\u6709\u6570\u636e\uff0c\u628a\u672c\u5730\u6570\u636e\u4e0a\u4f20\u5230\u4e91\u7aef\n          console.log('Local data has ' + this._d.ledger.length + ' records, uploading to cloud');\n          this._save();\n        }\n      }\n    } catch(e) {\n      console.log('Cloud load failed, using local data');\n    }\n    return false;\n  },\n  _save() { \n    localStorage.setItem('rentData', JSON.stringify(this._d));\n    // \u5f02\u6b65\u4e0a\u4f20\u5230 GitHub\uff08\u4e0d\u963b\u585e UI\uff09\n    // \u4f7f\u7528ASCII\u5b89\u5168\u5e8f\u5217\u5316\uff0c\u907f\u514d\u4e2d\u6587\u4e71\u7801\n    if (ENABLE_CLOUD_SYNC && WORKER_URL) {\n      fetch(WORKER_URL + '/api/data', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(this._d).replace(/[\\u0080-\\uffff]/g, function(c) {\n          return '\\\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);\n        })\n      }).catch(e => console.log('Cloud sync failed:', e.message));\n    }\n  },\n  g() { return this._d; },\n\n  // Rooms\n  gr() { return this._d.rooms; },\n  grm(id) { return this._d.rooms.find(r => r.id === id); },\n  ar(r) { r.id = 'r' + (this._d.nid.r++); this._d.rooms.push(r); this._save(); return r; },\n  ur(id, u) { const i = this._d.rooms.findIndex(x => x.id === id); if(i>-1){Object.assign(this._d.rooms[i],u);this._save();return this._d.rooms[i];}return null; },\n\n  // Tenants\n  gt() { return this._d.tenants; },\n  gtm(id) { return this._d.tenants.find(t => t.id === id); },\n  at(t) { t.id = 't' + (this._d.nid.t++); this._d.tenants.push(t); const r = this.grm(t.roomId); if(r){r.cur=t.id;r.status='\u5728\u79df';} this._save(); return t; },\n  ut(id, u) { const i = this._d.tenants.findIndex(x => x.id === id); if(i>-1){Object.assign(this._d.tenants[i],u);this._save();return this._d.tenants[i];}return null; },\n  et(id, ed) {\n    const t = this.gtm(id); if(!t)return null;\n    t.endDate = ed; t.depositReturned = true;\n    const r = this.grm(t.roomId); if(r){r.cur=null;r.status='\u7a7a\u7f6e';}\n    this._save(); return t;\n  },\n\n  // Transactions (\u7edf\u4e00\u4f7f\u7528 ledger)\n  gtx() { return this._d.ledger; },\n  atx(t) { t.id = 'l' + (this._d.nid.l++); this._d.ledger.push(t); this._save(); return t; },\n  dtx(id) { this._d.ledger = this._d.ledger.filter(x => x.id !== id); this._save(); },\n\n  // Bills\n  gb() { return this._d.bills; },\n  ab(b) { b.id = 'b' + (this._d.nid.b++); this._d.bills.push(b); this._save(); return b; },\n\n  // Ledger (\u6d41\u6c34\u53f0\u8d26)\n  gl() { return this._d.ledger || []; },\n  al(l) { l.id = 'l' + (this._d.nid.l++); this._d.ledger.push(l); this._save(); return l; },\n  dl(id) { this._d.ledger = this._d.ledger.filter(x => x.id !== id); this._save(); },\n  ul(id, u) { const i = this._d.ledger.findIndex(x => x.id === id); if(i>-1){Object.assign(this._d.ledger[i],u);this._save();return this._d.ledger[i];}return null; },\n  batchAddLedger(rows) {\n    rows.forEach(r => { r.id = 'l' + (this._d.nid.l++); this._d.ledger.push(r); });\n    this._save();\n    return rows.length;\n  },\n\n  // Summary\n  sum() {\n    const tx = this._d.ledger;\n    const ti = tx.filter(x=>x.\u6536==='\u6536\u5165').reduce((s,x)=>s+(x.\u91d1\u989d||0),0);\n    const te = tx.filter(x=>x.\u6536==='\u652f\u51fa').reduce((s,x)=>s+(x.\u91d1\u989d||0),0);\n    const now = new Date().toISOString().slice(0,10);\n    const at = this._d.tenants.filter(t => !t.endDate || t.endDate >= now).length;\n    const ar = this._d.rooms.filter(r => r.status === '\u5728\u79df').length;\n    const tr = this._d.rooms.length;\n    const dep = this._d.tenants.reduce((s,t)=>s+(t.deposit||0),0);\n    const ud = this._d.tenants.filter(t=>!t.depositReturned).reduce((s,t)=>s+(t.deposit||0),0);\n    const wi_water = tx.filter(x=>x.\u6536==='\u6536\u5165').reduce((s,x)=>s+(x.\u6c34\u8d39||0),0);\n    const wi_elec = tx.filter(x=>x.\u6536==='\u6536\u5165').reduce((s,x)=>s+(x.\u7535\u8d39||0),0);\n    const we_water = tx.filter(x=>x.\u6536==='\u652f\u51fa').reduce((s,x)=>s+(x.\u6c34\u8d39||0),0);\n    const we_elec = tx.filter(x=>x.\u6536==='\u652f\u51fa').reduce((s,x)=>s+(x.\u7535\u8d39||0),0);\n    const wi = wi_water + wi_elec;\n    const ue = this._d.bills.reduce((s,b)=>s+b.amount,0);\n    const mm = {};\n    tx.forEach(t => {\n      const m = (t.\u4ea4\u6613\u65f6\u95f4||'').substring(0,7); if(!m)return;\n      if(!mm[m]) mm[m] = {i:0,e:0};\n      if(t.\u6536==='\u6536\u5165') mm[m].i += (t.\u91d1\u989d||0); else mm[m].e += (t.\u91d1\u989d||0);\n    });\n    const sc = {}; this._d.tenants.forEach(t => { sc[t.source] = (sc[t.source]||0)+1; });\n    return { ti, te, ni: ti-te, at, ar, tr, vr: tr>0?Math.round((1-ar/tr)*100):0, dep, ud, rd: dep-ud, wi, wi_water, wi_elec, we_water, we_elec, ue, up: wi-ue, mm, sc };\n  },\n\n  // Export\n  exp() { return JSON.stringify(this._d, null, 2); },\n  imp(d) {\n    if(d.rooms) this._d.rooms = d.rooms;\n    if(d.tenants) this._d.tenants = d.tenants;\n    if(d.bills) this._d.bills = d.bills;\n    if(d.ledger) this._d.ledger = d.ledger;\n    if(d.nid) this._d.nid = d.nid;\n    this._save();\n  },\n\n  _seed() {\n    const d = this._d;\n    d.tenants = [\n      {id:'t1',name:'\u7761\u5f97\u72af\u56f0\u4e86',phone:'',source:'\u5c0f\u7ea2\u4e66',roomId:'r3',startDate:'2025-10-05',endDate:'2026-01-14',deposit:850,depositReturned:true,notes:''},\n      {id:'t2',name:'\u6728\u6728\u4e54',phone:'',source:'\u5c0f\u7ea2\u4e66',roomId:'r3',startDate:'2026-03-03',endDate:'2026-06-30',deposit:700,depositReturned:false,notes:''},\n      {id:'t3',name:'\u7761\u5f97\u72af\u56f0\u4e86',phone:'',source:'\u7eed\u4f4f',roomId:'r5',startDate:'2026-02-28',endDate:'2026-07-14',deposit:800,depositReturned:false,notes:''},\n      {id:'t4',name:'\u53cb',phone:'',source:'\u4e2d\u4ecb-\u5411\u524d',roomId:'r5',startDate:'2025-09-26',endDate:'2026-01-25',deposit:800,depositReturned:true,notes:''},\n      {id:'t5',name:'.\u4e09\u63d0\u814a\u6263.',phone:'',source:'\u4e2d\u4ecb-\u5411\u524d',roomId:'r7',startDate:'2026-03-10',endDate:'2026-07-10',deposit:600,depositReturned:false,notes:''},\n      {id:'t6',name:'\u5c0f\u53ef',phone:'',source:'\u4e2d\u4ecb-\u5411\u524d',roomId:'r1',startDate:'2026-01-17',endDate:'2026-07-17',deposit:500,depositReturned:false,notes:''},\n      {id:'t7',name:'\u9752\u82b1',phone:'',source:'QQ\u7fa4',roomId:'r2',startDate:'2026-03-30',endDate:'2026-07-14',deposit:700,depositReturned:false,notes:''},\n      {id:'t8',name:'\u5c0f\u51e1\u4e0d\u70e6',phone:'',source:'QQ\u7fa4',roomId:'r8',startDate:'2026-03-05',endDate:'2026-07-04',deposit:350,depositReturned:false,notes:''},\n      {id:'t9',name:'zlei',phone:'',source:'\u5c0f\u7ea2\u4e66',roomId:'r9',startDate:'2025-12-08',endDate:'2026-03-30',deposit:700,depositReturned:true,notes:''},\n      {id:'t10',name:'\u65e9\u8046.',phone:'',source:'\u4e2d\u4ecb-\u5411\u524d',roomId:'r4',startDate:'2025-09-15',endDate:'2025-12-14',deposit:700,depositReturned:true,notes:''},\n      {id:'t11',name:'Ani126',phone:'',source:'\u4e2d\u4ecb-\u5411\u524d',roomId:'r4',startDate:'2026-03-01',endDate:'2026-07-01',deposit:600,depositReturned:false,notes:''},\n      {id:'t12',name:'\u6d69\u6d69.',phone:'',source:'QQ\u7fa4',roomId:'r9',startDate:'2026-05-10',endDate:'2026-07-10',deposit:800,depositReturned:false,notes:''},\n      {id:'t13',name:'\u65e0\u4e8b\u5c0f\u795e\u4ed9',phone:'',source:'\u4e2d\u4ecb-\u5411\u524d',roomId:'r1',startDate:'2025-09-12',endDate:'2025-11-22',deposit:500,depositReturned:true,notes:''},\n      {id:'t14',name:'Small volcano6',phone:'',source:'\u4e2d\u4ecb-\u5411\u524d',roomId:'r2',startDate:'2025-09-20',endDate:'2026-01-20',deposit:800,depositReturned:true,notes:''},\n      {id:'t15',name:'\u4e03\u6597\u661f\u664b\u8001\u5e08',phone:'',source:'\u63a8\u8350',roomId:'r9',startDate:'2026-04-10',endDate:'2026-05-10',deposit:100,depositReturned:true,notes:''},\n      {id:'t16',name:'\u98ce\u4e4b\u5f71',phone:'',source:'\u63a8\u8350',roomId:'r6',startDate:'2026-03-03',endDate:'2026-03-21',deposit:100,depositReturned:true,notes:''},\n      {id:'t17',name:'\u67ab\u96e8\u793c',phone:'',source:'QQ\u7fa4',roomId:'r6',startDate:'2026-01-10',endDate:'2026-01-25',deposit:100,depositReturned:true,notes:''},\n      {id:'t18',name:'\u6124\u6012\u7684\u841d\u535c.',phone:'',source:'QQ\u7fa4',roomId:'r3',startDate:'2026-01-14',endDate:'2026-02-13',deposit:100,depositReturned:true,notes:''},\n      {id:'t19',name:'\u79cb\u9047\u747e',phone:'',source:'QQ\u7fa4',roomId:'r4',startDate:'2026-01-16',endDate:'2026-02-16',deposit:100,depositReturned:true,notes:''},\n      {id:'t20',name:'\u5c9b\u5df7\u843d\u706f',phone:'',source:'\u63a8\u8350',roomId:'r4',startDate:'2026-07-01',endDate:'2027-06-30',deposit:200,depositReturned:false,notes:''},\n      {id:'t21',name:'\u65fa\u65fa\u6380\u88ab',phone:'',source:'QQ\u7fa4',roomId:'r6',startDate:'2026-04-05',endDate:'2026-07-14',deposit:600,depositReturned:false,notes:''},\n    ];\n    d.tenants.filter(t => !t.endDate || t.endDate >= '2026-06-13').forEach(t => {\n      const r = d.rooms.find(x => x.id === t.roomId); if(r){r.cur=t.id;r.status='\u5728\u79df';}\n    });\n    d.ledger = [];\n    d.bills = [];\n    this._save();\n  }\n};\n\n// ===== HELPERS =====\nlet cp = 'dashboard', charts = {};\nfunction $(id) { return document.getElementById(id); }\nfunction fm(v) { return '\u00a5' + Number(v).toLocaleString('zh-CN',{minF:2,maxF:2}); }\nfunction fd(d) { if(!d)return '-'; return new Date(d).toLocaleDateString('zh-CN'); }\nfunction ml(m) { if(!m)return ''; const [y,mm]=m.split('-'); return y+'\u5e74'+parseInt(mm)+'\u6708'; }\nfunction rn(id) { const r=S.grm(id); return r?r.name:''; }\nfunction tn(id) { const t=S.gtm(id); return t?t.name:''; }\nfunction ts() { $('sidebar').classList.toggle('open'); }\nfunction n(p) { cp=p; window.location.hash=p; document.querySelectorAll('.nav a').forEach(e=>e.classList.remove('active')); const a=document.querySelector(`.nav a[href=\"#${p}\"]`); if(a)a.classList.add('active'); r(p); }\nfunction st(msg,type='i') { const t=document.createElement('div'); t.className='toast '+type; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300)},3000); }\nfunction om(html) { $('mc').innerHTML=html; $('mo').classList.add('show'); }\nfunction cm() { $('mo').classList.remove('show'); }\n\nfunction r(p) {\n  const m = $('main');\n  const d = S.g();\n  const s = S.sum();\n  switch(p) {\n    case 'dashboard': rd(m,d,s); break;\n    case 'tenants': rt(m,d); break;\n    case 'rooms': rr(m,d); break;\n    case 'transactions': rl(m,d); break;\n    case 'ledger': rlf(m,d); break;\n    case 'ledger-full': rlf(m,d); break;\n    case 'utilities': ru(m); break;\n    case 'deposits': rdp(m,d); break;\n    case 'reports': rrp(m,d,s); break;\n    case 'backup': rbk(m,d); break;\n    default: m.innerHTML = '<div class=\"es\"><div class=\"ic\">\ud83d\udd27</div><h4>\u529f\u80fd\u5f00\u53d1\u4e2d</h4></div>';\n  }\n}\n\n// ===== DASHBOARD =====\nfunction rd(m,d,s) {\n  const now = new Date().toISOString().slice(0,10);\n  const month = now.substring(0,7);\n  const mi = d.ledger.filter(x=>x.\u6536==='\u6536\u5165'&&(x.\u4ea4\u6613\u65f6\u95f4||'').startsWith(month)).reduce((a,x)=>a+(x.\u91d1\u989d||0),0);\n  const me = d.ledger.filter(x=>x.\u6536==='\u652f\u51fa'&&(x.\u4ea4\u6613\u65f6\u95f4||'').startsWith(month)).reduce((a,x)=>a+(x.\u91d1\u989d||0),0);\n  m.innerHTML = `\n    <div class=\"ph\"><h2>\u4eea\u8868\u76d8</h2><span class=\"dt\">${now}</span></div>\n    <div class=\"grid\">\n      <div class=\"sc\"><div class=\"l\">\u672c\u6708\u6536\u5165</div><div class=\"v ts\">${fm(mi)}</div></div>\n      <div class=\"sc red\"><div class=\"l\">\u672c\u6708\u652f\u51fa</div><div class=\"v\">${fm(me)}</div></div>\n      <div class=\"sc green\"><div class=\"l\">\u672c\u6708\u7ed3\u4f59</div><div class=\"v\">${fm(mi-me)}</div></div>\n      <div class=\"sc\"><div class=\"l\">\u603b\u6536\u5165</div><div class=\"v ts\">${fm(s.ti)}</div></div>\n      <div class=\"sc red\"><div class=\"l\">\u603b\u652f\u51fa</div><div class=\"v\">${fm(s.te)}</div></div>\n      <div class=\"sc green\"><div class=\"l\">\u51c0\u5229\u6da6</div><div class=\"v\">${fm(s.ni)}</div></div>\n    </div>\n    <div class=\"grid\">\n      <div class=\"sc\"><div class=\"l\">\u5728\u79df\u623f\u95f4</div><div class=\"v\">${s.ar}/${s.tr}</div><div class=\"c\">\u51fa\u79df\u7387 ${s.vr}%</div></div>\n      <div class=\"sc\"><div class=\"l\">\u5728\u79df\u79df\u6237</div><div class=\"v\">${s.at}</div></div>\n      <div class=\"sc\"><div class=\"l\">\u62bc\u91d1\u603b\u989d</div><div class=\"v\">${fm(s.dep)}</div><div class=\"c\">\u672a\u9000 ${fm(s.ud)}</div></div>\n      <div class=\"sc\"><div class=\"l\">\u6c34\u8d39\u6536\u5165</div><div class=\"v ts\">${fm(s.wi_water)}</div></div>\n      <div class=\"sc\"><div class=\"l\">\u7535\u8d39\u6536\u5165</div><div class=\"v ts\">${fm(s.wi_elec)}</div></div>\n      <div class=\"sc red\"><div class=\"l\">\u6c34\u7535\u8d39\u652f\u51fa</div><div class=\"v\">${fm(s.ue)}</div></div>\n    </div>\n    <div class=\"gc\"><div class=\"gb\"><canvas id=\"c1\"></canvas></div><div class=\"gb\"><canvas id=\"c2\"></canvas></div></div>\n  `;\n  setTimeout(() => {\n    const c1=$('c1'); if(c1){if(charts.c1)charts.c1.destroy();charts.c1=new Chart(c1,{type:'doughnut',data:{labels:['\u6536\u5165','\u652f\u51fa'],datasets:[{data:[s.ti,s.te],backgroundColor:['#1a73e8','#d93025'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:ctx=>ctx.label+': '+fm(ctx.raw)}}}}});}\n    const c2=$('c2'); if(c2){if(charts.c2)charts.c2.destroy();charts.c2=new Chart(c2,{type:'doughnut',data:{labels:['\u6c34\u8d39\u6536\u5165','\u7535\u8d39\u6536\u5165','\u6c34\u7535\u8d39\u652f\u51fa'],datasets:[{data:[s.wi_water,s.wi_elec,s.ue],backgroundColor:['#1a73e8','#0f9d58','#d93025'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:ctx=>ctx.label+': '+fm(ctx.raw)}}}}});}\n  }, 100);\n}\n\n// ===== TENANTS =====\nfunction rt(m,d) {\n  const now = new Date().toISOString().slice(0,10);\n  m.innerHTML = `\n    <div class=\"ph\"><h2>\u79df\u6237\u7ba1\u7406</h2><button class=\"btn\" onclick=\"oat()\">+ \u6dfb\u52a0\u79df\u6237</button></div>\n    <table><thead><tr><th>\u59d3\u540d</th><th>\u623f\u95f4</th><th>\u624b\u673a</th><th>\u6765\u6e90</th><th>\u5165\u4f4f</th><th>\u5230\u671f</th><th>\u62bc\u91d1</th><th>\u72b6\u6001</th><th>\u64cd\u4f5c</th></tr></thead><tbody>\n    ${d.tenants.map(t => {\n      const r = S.grm(t.roomId);\n      const expired = t.endDate && t.endDate < now;\n      return `<tr class=\"${expired?'ex':''}\"><td>${t.name}</td><td>${r?r.name:'-'}</td><td>${t.phone||'-'}</td><td>${t.source||'-'}</td><td>${fd(t.startDate)}</td><td>${fd(t.endDate)}</td><td>${fm(t.deposit)}</td><td>${t.depositReturned?'<span class=\"tg\">\u5df2\u9000</span>':expired?'<span class=\"tr\">\u5df2\u5230\u671f</span>':'<span class=\"tg\">\u5728\u79df</span>'}</td><td><button class=\"btn sm\" onclick=\"ot('${t.id}')\">\u7f16\u8f91</button>${!t.depositReturned&&t.endDate?` <button class=\"btn sm dr\" onclick=\"if(confirm('\u786e\u8ba4\u9000\u79df\uff1f')){S.et('${t.id}','${now}');r('tenants');}\">\u9000\u79df</button>`:''}</td></tr>`;\n    }).join('')}\n    </tbody></table>\n  `;\n}\nfunction oat() {\n  const rooms = S.gr().filter(r => r.status === '\u7a7a\u7f6e' || !r.status);\n  om(`\n    <h3>\u6dfb\u52a0\u79df\u6237</h3>\n    <div class=\"ff\">\n      <label>\u59d3\u540d <input id=\"f_tn\" placeholder=\"\u79df\u6237\u59d3\u540d\"></label>\n      <label>\u624b\u673a <input id=\"f_tp\" placeholder=\"\u624b\u673a\u53f7\"></label>\n      <label>\u6765\u6e90 <input id=\"f_ts\" placeholder=\"\u6765\u6e90\uff08\u5982\u5c0f\u7ea2\u4e66\u3001QQ\u7fa4\uff09\"></label>\n      <label>\u623f\u95f4 <select id=\"f_tr\">${rooms.map(r=>'<option value=\"'+r.id+'\">'+r.name+'</option>').join('')}</select></label>\n      <label>\u5165\u4f4f\u65e5\u671f <input id=\"f_tsd\" type=\"date\" value=\"${new Date().toISOString().slice(0,10)}\"></label>\n      <label>\u5230\u671f\u65e5\u671f <input id=\"f_ted\" type=\"date\"></label>\n      <label>\u62bc\u91d1 <input id=\"f_tdep\" type=\"number\" placeholder=\"\u62bc\u91d1\u91d1\u989d\"></label>\n      <label>\u5907\u6ce8 <input id=\"f_tn2\" placeholder=\"\u5907\u6ce8\"></label>\n      <button class=\"btn\" onclick=\"sbt()\">\u4fdd\u5b58</button>\n      <button class=\"btn scd\" onclick=\"cm()\">\u53d6\u6d88</button>\n    </div>\n  `);\n}\nfunction sbt() {\n  const tn = $('f_tn'), tp = $('f_tp'), ts = $('f_ts'), tr = $('f_tr'), tsd = $('f_tsd'), ted = $('f_ted'), tdep = $('f_tdep'), tn2 = $('f_tn2');\n  if(!tn.value.trim()) return st('\u8bf7\u8f93\u5165\u59d3\u540d','e');\n  S.at({name:tn.value.trim(),phone:tp.value.trim(),source:ts.value.trim(),roomId:tr.value,startDate:tsd.value,endDate:ted.value||null,deposit:parseFloat(tdep.value)||0,depositReturned:false,notes:tn2.value.trim()});\n  cm(); r('tenants'); st('\u79df\u6237\u6dfb\u52a0\u6210\u529f');\n}\nfunction ot(id) {\n  const t = S.gtm(id);\n  const rooms = S.gr();\n  om(`\n    <h3>\u7f16\u8f91\u79df\u6237</h3>\n    <div class=\"ff\">\n      <label>\u59d3\u540d <input id=\"f_tn\" value=\"${t.name}\"></label>\n      <label>\u624b\u673a <input id=\"f_tp\" value=\"${t.phone||''}\"></label>\n      <label>\u6765\u6e90 <input id=\"f_ts\" value=\"${t.source||''}\"></label>\n      <label>\u623f\u95f4 <select id=\"f_tr\">${rooms.map(r=>'<option value=\"'+r.id+'\"'+(r.id===t.roomId?' selected':'')+'>'+r.name+'</option>').join('')}</select></label>\n      <label>\u5165\u4f4f\u65e5\u671f <input id=\"f_tsd\" type=\"date\" value=\"${t.startDate||''}\"></label>\n      <label>\u5230\u671f\u65e5\u671f <input id=\"f_ted\" type=\"date\" value=\"${t.endDate||''}\"></label>\n      <label>\u62bc\u91d1 <input id=\"f_tdep\" type=\"number\" value=\"${t.deposit}\"></label>\n      <label>\u5907\u6ce8 <input id=\"f_tn2\" value=\"${t.notes||''}\"></label>\n      <button class=\"btn\" onclick=\"sbt2('${id}')\">\u4fdd\u5b58</button>\n      <button class=\"btn scd\" onclick=\"cm()\">\u53d6\u6d88</button>\n    </div>\n  `);\n}\nfunction sbt2(id) {\n  S.ut(id,{name:$('f_tn').value.trim(),phone:$('f_tp').value.trim(),source:$('f_ts').value.trim(),roomId:$('f_tr').value,startDate:$('f_tsd').value,endDate:$('f_ted').value||null,deposit:parseFloat($('f_tdep').value)||0,notes:$('f_tn2').value.trim()});\n  cm(); r('tenants'); st('\u79df\u6237\u5df2\u66f4\u65b0');\n}\n\n// ===== ROOMS =====\nfunction rr(m,d) {\n  m.innerHTML = `\n    <div class=\"ph\"><h2>\u623f\u95f4\u7ba1\u7406</h2><button class=\"btn\" onclick=\"oar()\">+ \u6dfb\u52a0\u623f\u95f4</button></div>\n    <table><thead><tr><th>\u623f\u95f4</th><th>\u697c\u680b</th><th>\u79df\u91d1</th><th>\u72b6\u6001</th><th>\u5f53\u524d\u79df\u6237</th><th>\u64cd\u4f5c</th></tr></thead><tbody>\n    ${d.rooms.map(r => {\n      const t = r.cur ? S.gtm(r.cur) : null;\n      return `<tr><td>${r.name}</td><td>${r.building}</td><td>${fm(r.rent)}</td><td>${r.status==='\u5728\u79df'?'<span class=\"tg\">\u5728\u79df</span>':'<span class=\"tr\">\u7a7a\u7f6e</span>'}</td><td>${t?t.name:'-'}</td><td><button class=\"btn sm\" onclick=\"oer('${r.id}')\">\u7f16\u8f91</button></td></tr>`;\n    }).join('')}\n    </tbody></table>\n  `;\n}\nfunction oar() {\n  om(`<h3>\u6dfb\u52a0\u623f\u95f4</h3><div class=\"ff\"><label>\u623f\u95f4\u540d <input id=\"f_rn\" placeholder=\"\u5982 305-1\"></label><label>\u697c\u680b <select id=\"f_rb\"><option value=\"305\u680b\">305\u680b</option><option value=\"106\u680b\">106\u680b</option></select></label><label>\u79df\u91d1 <input id=\"f_rr\" type=\"number\" placeholder=\"\u6708\u79df\u91d1\"></label><button class=\"btn\" onclick=\"sbr()\">\u4fdd\u5b58</button><button class=\"btn scd\" onclick=\"cm()\">\u53d6\u6d88</button></div>`);\n}\nfunction sbr() {\n  const n=$('f_rn'),b=$('f_rb'),r=$('f_rr');\n  if(!n.value.trim()||!r.value) return st('\u8bf7\u586b\u5199\u5b8c\u6574','e');\n  S.ar({name:n.value.trim(),building:b.value,rent:parseFloat(r.value),status:'\u7a7a\u7f6e',cur:null});\n  cm(); r('rooms'); st('\u623f\u95f4\u6dfb\u52a0\u6210\u529f');\n}\nfunction oer(id) {\n  const rm = S.grm(id);\n  om(`<h3>\u7f16\u8f91\u623f\u95f4</h3><div class=\"ff\"><label>\u623f\u95f4\u540d <input id=\"f_rn\" value=\"${rm.name}\"></label><label>\u697c\u680b <select id=\"f_rb\"><option value=\"305\u680b\"${rm.building==='305\u680b'?' selected':''}>305\u680b</option><option value=\"106\u680b\"${rm.building==='106\u680b'?' selected':''}>106\u680b</option></select></label><label>\u79df\u91d1 <input id=\"f_rr\" type=\"number\" value=\"${rm.rent}\"></label><button class=\"btn\" onclick=\"sbr2('${id}')\">\u4fdd\u5b58</button><button class=\"btn scd\" onclick=\"cm()\">\u53d6\u6d88</button></div>`);\n}\nfunction sbr2(id) {\n  S.ur(id,{name:$('f_rn').value.trim(),building:$('f_rb').value,rent:parseFloat($('f_rr').value)||0});\n  cm(); r('rooms'); st('\u623f\u95f4\u5df2\u66f4\u65b0');\n}\n\n// ===== LEDGER (\u6536\u652f\u6d41\u6c34) =====\nfunction rl(m,d) {\n  const tx = d.ledger.filter(x=>x.\u6536==='\u6536\u5165').sort((a,b)=>(b.\u4ea4\u6613\u65f6\u95f4||'')>(a.\u4ea4\u6613\u65f6\u95f4||'')?1:-1);\n  m.innerHTML = `\n    <div class=\"ph\"><h2>\u6536\u652f\u6d41\u6c34</h2><button class=\"btn\" onclick=\"oatx()\">+ \u6dfb\u52a0\u6536\u5165</button></div>\n    <table><thead><tr><th>\u65f6\u95f4</th><th>\u5bf9\u65b9</th><th>\u91d1\u989d</th><th>\u6c34\u8d39</th><th>\u7535\u8d39</th><th>\u5907\u6ce8</th><th>\u64cd\u4f5c</th></tr></thead><tbody>\n    ${tx.map(t => `<tr><td>${(t.\u4ea4\u6613\u65f6\u95f4||'').substring(0,10)}</td><td>${t.\u5bf9\u65b9||''}</td><td class=\"ts\">${fm(t.\u91d1\u989d)}</td><td>${t.\u6c34\u8d39?fm(t.\u6c34\u8d39):'-'}</td><td>${t.\u7535\u8d39?fm(t.\u7535\u8d39):'-'}</td><td>${t.\u5907\u6ce8||''}</td><td><button class=\"btn sm\" onclick=\"oetx('${t.id}')\">\u7f16\u8f91</button></td></tr>`).join('')}\n    </tbody></table>\n  `;\n}\nfunction oatx() {\n  om(`<h3>\u6dfb\u52a0\u6536\u5165</h3><div class=\"ff\"><label>\u65f6\u95f4 <input id=\"f_lt\" type=\"datetime-local\"></label><label>\u5bf9\u65b9 <input id=\"f_lp\" placeholder=\"\u79df\u6237\u540d\"></label><label>\u91d1\u989d <input id=\"f_la\" type=\"number\" placeholder=\"\u6536\u5165\u91d1\u989d\"></label><label>\u6c34\u8d39 <input id=\"f_lw\" type=\"number\" placeholder=\"\u6c34\u8d39\"></label><label>\u7535\u8d39 <input id=\"f_le\" type=\"number\" placeholder=\"\u7535\u8d39\"></label><label>\u5907\u6ce8 <input id=\"f_ln\" placeholder=\"\u5907\u6ce8\"></label><button class=\"btn\" onclick=\"sbtx()\">\u4fdd\u5b58</button><button class=\"btn scd\" onclick=\"cm()\">\u53d6\u6d88</button></div>`);\n}\nfunction sbtx() {\n  const t=$('f_lt'),p=$('f_lp'),a=$('f_la'),w=$('f_lw'),e=$('f_le'),n=$('f_ln');\n  if(!a.value) return st('\u8bf7\u8f93\u5165\u91d1\u989d','e');\n  S.atx({\u4ea4\u6613\u65f6\u95f4:(t.value||new Date().toISOString().slice(0,16))+':00',\u4ea4\u6613\u7c7b:'\u8f6c\u8d26',\u5bf9\u65b9:p.value.trim(),\u5546\u54c1:'',\u6536:'\u6536\u5165',\u91d1\u989d:parseFloat(a.value),\u652f\u4ed8\u65b9\u5f0f:'',\u72b6\u6001:'\u5df2\u5b58\u5165\u96f6\u94b1',\u4ea4\u6613\u5355\u53f7:'',\u5546\u6237\u5355\u53f7:'',\u5907\u6ce8:n.value.trim(),\u6c34\u8d39:parseFloat(w.value)||0,\u7535\u8d39:parseFloat(e.value)||0});\n  cm(); r('ledger'); st('\u6536\u5165\u6dfb\u52a0\u6210\u529f');\n}\nfunction oetx(id) {\n  const t = S.gtx().find(x=>x.id===id);\n  if(!t) return;\n  om(`<h3>\u7f16\u8f91\u6536\u5165</h3><div class=\"ff\"><label>\u65f6\u95f4 <input id=\"f_lt\" type=\"datetime-local\" value=\"${(t.\u4ea4\u6613\u65f6\u95f4||'').substring(0,16)}\"></label><label>\u5bf9\u65b9 <input id=\"f_lp\" value=\"${t.\u5bf9\u65b9||''}\"></label><label>\u91d1\u989d <input id=\"f_la\" type=\"number\" value=\"${t.\u91d1\u989d}\"></label><label>\u6c34\u8d39 <input id=\"f_lw\" type=\"number\" value=\"${t.\u6c34\u8d39||0}\"></label><label>\u7535\u8d39 <input id=\"f_le\" type=\"number\" value=\"${t.\u7535\u8d39||0}\"></label><label>\u5907\u6ce8 <input id=\"f_ln\" value=\"${t.\u5907\u6ce8||''}\"></label><button class=\"btn\" onclick=\"sbtx2('${id}')\">\u4fdd\u5b58</button><button class=\"btn scd\" onclick=\"cm()\">\u53d6\u6d88</button></div>`);\n}\nfunction sbtx2(id) {\n  S.ul(id,{\u4ea4\u6613\u65f6\u95f4:($('f_lt').value||new Date().toISOString().slice(0,16))+':00',\u5bf9\u65b9:$('f_lp').value.trim(),\u91d1\u989d:parseFloat($('f_la').value)||0,\u6c34\u8d39:parseFloat($('f_lw').value)||0,\u7535\u8d39:parseFloat($('f_le').value)||0,\u5907\u6ce8:$('f_ln').value.trim()});\n  cm(); r('ledger'); st('\u5df2\u66f4\u65b0');\n}\n\n// ===== LEDGER FULL (\u6d41\u6c34\u53f0\u8d26) =====\nfunction rlf(m,d) {\n  const tx = [...d.ledger].sort((a,b)=>(b.\u4ea4\u6613\u65f6\u95f4||'')>(a.\u4ea4\u6613\u65f6\u95f4||'')?1:-1);\n  m.innerHTML = `\n    <div class=\"ph\"><h2>\u6d41\u6c34\u53f0\u8d26</h2><button class=\"btn\" onclick=\"oalf()\">+ \u6dfb\u52a0\u8bb0\u5f55</button><button class=\"btn scd\" onclick=\"ilg()\" style=\"margin-left:8px\">\ud83d\udccb \u7c98\u8d34\u5bfc\u5165</button></div>\n    <div class=\"tbw\"><table><thead><tr><th>\u65f6\u95f4</th><th>\u7c7b\u578b</th><th>\u5bf9\u65b9</th><th>\u5546\u54c1</th><th>\u6536/\u652f</th><th>\u91d1\u989d</th><th>\u652f\u4ed8\u65b9\u5f0f</th><th>\u72b6\u6001</th><th>\u6c34\u8d39</th><th>\u7535\u8d39</th><th>\u5907\u6ce8</th><th>\u64cd\u4f5c</th></tr></thead><tbody>\n    ${tx.map(t => `<tr class=\"${t.\u6536==='\u652f\u51fa'?'ex':''}\"><td>${(t.\u4ea4\u6613\u65f6\u95f4||'').substring(0,10)}</td><td>${t.\u4ea4\u6613\u7c7b||''}</td><td>${t.\u5bf9\u65b9||''}</td><td>${t.\u5546\u54c1||''}</td><td>${t.\u6536}</td><td class=\"${t.\u6536==='\u6536\u5165'?'ts':'tr2'}\">${fm(t.\u91d1\u989d)}</td><td>${t.\u652f\u4ed8\u65b9\u5f0f||''}</td><td>${t.\u72b6\u6001||''}</td><td>${t.\u6c34\u8d39?fm(t.\u6c34\u8d39):'-'}</td><td>${t.\u7535\u8d39?fm(t.\u7535\u8d39):'-'}</td><td>${t.\u5907\u6ce8||''}</td><td><button class=\"btn sm\" onclick=\"oelf('${t.id}')\">\u7f16\u8f91</button> <button class=\"btn sm dr\" onclick=\"if(confirm('\u786e\u8ba4\u5220\u9664\uff1f')){S.dl('${t.id}');r('ledger-full');}\">\u5220\u9664</button></td></tr>`).join('')}\n    </tbody></table></div>\n    <div class=\"st\">\u5171 ${tx.length} \u7b14\u8bb0\u5f55 \u00b7 <a href=\"#\" onclick=\"ilg();return false\">\u4ece\u5fae\u4fe1/Excel \u76f4\u63a5\u7c98\u8d34</a></div>\n  `;\n}\nfunction oalf() {\n  om(`<h3>\u6dfb\u52a0\u53f0\u8d26\u8bb0\u5f55</h3><div class=\"ff\"><label>\u65f6\u95f4 <input id=\"f_lft\" type=\"datetime-local\"></label><label>\u7c7b\u578b <input id=\"f_lftype\" value=\"\u8f6c\u8d26\"></label><label>\u5bf9\u65b9 <input id=\"f_lfp\" placeholder=\"\u5bf9\u65b9\"></label><label>\u5546\u54c1 <input id=\"f_lfg\" placeholder=\"\u5546\u54c1\u8bf4\u660e\"></label><label>\u6536/\u652f <select id=\"f_lfio\"><option value=\"\u6536\u5165\">\u6536\u5165</option><option value=\"\u652f\u51fa\">\u652f\u51fa</option></select></label><label>\u91d1\u989d <input id=\"f_lfa\" type=\"number\" placeholder=\"\u91d1\u989d\"></label><label>\u652f\u4ed8\u65b9\u5f0f <input id=\"f_lfpm\" placeholder=\"\u652f\u4ed8\u65b9\u5f0f\"></label><label>\u72b6\u6001 <input id=\"f_lfst\" placeholder=\"\u72b6\u6001\"></label><label>\u6c34\u8d39 <input id=\"f_lfw\" type=\"number\" placeholder=\"\u6c34\u8d39\"></label><label>\u7535\u8d39 <input id=\"f_lfe\" type=\"number\" placeholder=\"\u7535\u8d39\"></label><label>\u5907\u6ce8 <input id=\"f_lfn\" placeholder=\"\u5907\u6ce8\"></label><button class=\"btn\" onclick=\"sblf()\">\u4fdd\u5b58</button><button class=\"btn scd\" onclick=\"cm()\">\u53d6\u6d88</button></div>`);\n}\nfunction sblf() {\n  S.al({\u4ea4\u6613\u65f6\u95f4:($('f_lft').value||new Date().toISOString().slice(0,16))+':00',\u4ea4\u6613\u7c7b:$('f_lftype').value.trim(),\u5bf9\u65b9:$('f_lfp').value.trim(),\u5546\u54c1:$('f_lfg').value.trim(),\u6536:$('f_lfio').value,\u91d1\u989d:parseFloat($('f_lfa').value)||0,\u652f\u4ed8\u65b9\u5f0f:$('f_lfpm').value.trim(),\u72b6\u6001:$('f_lfst').value.trim(),\u4ea4\u6613\u5355\u53f7:'',\u5546\u6237\u5355\u53f7:'',\u5907\u6ce8:$('f_lfn').value.trim(),\u6c34\u8d39:parseFloat($('f_lfw').value)||0,\u7535\u8d39:parseFloat($('f_lfe').value)||0});\n  cm(); r('ledger-full'); st('\u8bb0\u5f55\u6dfb\u52a0\u6210\u529f');\n}\nfunction oelf(id) {\n  const t = S.gl().find(x=>x.id===id);\n  if(!t) return;\n  om(`<h3>\u7f16\u8f91\u53f0\u8d26\u8bb0\u5f55</h3><div class=\"ff\"><label>\u65f6\u95f4 <input id=\"f_lft\" type=\"datetime-local\" value=\"${(t.\u4ea4\u6613\u65f6\u95f4||'').substring(0,16)}\"></label><label>\u7c7b\u578b <input id=\"f_lftype\" value=\"${t.\u4ea4\u6613\u7c7b||''}\"></label><label>\u5bf9\u65b9 <input id=\"f_lfp\" value=\"${t.\u5bf9\u65b9||''}\"></label><label>\u5546\u54c1 <input id=\"f_lfg\" value=\"${t.\u5546\u54c1||''}\"></label><label>\u6536/\u652f <select id=\"f_lfio\"><option value=\"\u6536\u5165\"${t.\u6536==='\u6536\u5165'?' selected':''}>\u6536\u5165</option><option value=\"\u652f\u51fa\"${t.\u6536==='\u652f\u51fa'?' selected':''}>\u652f\u51fa</option></select></label><label>\u91d1\u989d <input id=\"f_lfa\" type=\"number\" value=\"${t.\u91d1\u989d}\"></label><label>\u652f\u4ed8\u65b9\u5f0f <input id=\"f_lfpm\" value=\"${t.\u652f\u4ed8\u65b9\u5f0f||''}\"></label><label>\u72b6\u6001 <input id=\"f_lfst\" value=\"${t.\u72b6\u6001||''}\"></label><label>\u6c34\u8d39 <input id=\"f_lfw\" type=\"number\" value=\"${t.\u6c34\u8d39||0}\"></label><label>\u7535\u8d39 <input id=\"f_lfe\" type=\"number\" value=\"${t.\u7535\u8d39||0}\"></label><label>\u5907\u6ce8 <input id=\"f_lfn\" value=\"${t.\u5907\u6ce8||''}\"></label><button class=\"btn\" onclick=\"sblf2('${id}')\">\u4fdd\u5b58</button><button class=\"btn scd\" onclick=\"cm()\">\u53d6\u6d88</button></div>`);\n}\nfunction sblf2(id) {\n  S.ul(id,{\u4ea4\u6613\u65f6\u95f4:($('f_lft').value||new Date().toISOString().slice(0,16))+':00',\u4ea4\u6613\u7c7b:$('f_lftype').value.trim(),\u5bf9\u65b9:$('f_lfp').value.trim(),\u5546\u54c1:$('f_lfg').value.trim(),\u6536:$('f_lfio').value,\u91d1\u989d:parseFloat($('f_lfa').value)||0,\u652f\u4ed8\u65b9\u5f0f:$('f_lfpm').value.trim(),\u72b6\u6001:$('f_lfst').value.trim(),\u5907\u6ce8:$('f_lfn').value.trim(),\u6c34\u8d39:parseFloat($('f_lfw').value)||0,\u7535\u8d39:parseFloat($('f_lfe').value)||0});\n  cm(); r('ledger-full'); st('\u5df2\u66f4\u65b0');\n}\nfunction ilg() {\n  om(`<h3>\u4ece\u5fae\u4fe1/Excel \u7c98\u8d34\u5bfc\u5165</h3><p style=\"color:var(--text2);margin-bottom:12px;font-size:13px\">\u4ece\u5fae\u4fe1\u8d26\u5355\u6216Excel\u590d\u5236\u6570\u636e\u884c\uff0c\u76f4\u63a5\u7c98\u8d34\u5230\u4e0b\u65b9\u6587\u672c\u6846</p><textarea id=\"f_imp\" style=\"width:100%;height:200px;padding:8px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:monospace\" placeholder=\"\u7c98\u8d34\u6570\u636e...\"></textarea><div style=\"margin-top:8px;display:flex;gap:8px\"><button class=\"btn\" onclick=\"doi()\">\u5bfc\u5165</button><button class=\"btn scd\" onclick=\"cm()\">\u53d6\u6d88</button></div>`);\n}\nfunction doi() {\n  const txt = $('f_imp').value.trim();\n  if(!txt) return st('\u8bf7\u7c98\u8d34\u6570\u636e','e');\n  const rows = txt.split('\\n').filter(r=>r.trim());\n  let count = 0;\n  rows.forEach(row => {\n    const cols = row.split('\\t');\n    if(cols.length < 6) return;\n    S.al({\n      \u4ea4\u6613\u65f6\u95f4: cols[0]||'',\n      \u4ea4\u6613\u7c7b: cols[1]||'',\n      \u5bf9\u65b9: cols[2]||'',\n      \u5546\u54c1: cols[3]||'',\n      \u6536: cols[4]||'',\n      \u91d1\u989d: parseFloat(cols[5])||0,\n      \u652f\u4ed8\u65b9\u5f0f: cols[6]||'',\n      \u72b6\u6001: cols[7]||'',\n      \u4ea4\u6613\u5355\u53f7: cols[8]||'',\n      \u5546\u6237\u5355\u53f7: cols[9]||'',\n      \u5907\u6ce8: cols[10]||'',\n      \u6c34\u8d39: parseFloat(cols[11])||0,\n      \u7535\u8d39: parseFloat(cols[12])||0\n    });\n    count++;\n  });\n  cm(); r('ledger-full'); st('\u6210\u529f\u5bfc\u5165 '+count+' \u6761\u8bb0\u5f55');\n}\n\n// ===== UTILITIES =====\nfunction ru(m) {\n  const s = S.sum();\n  const bills = S.gb();\n  const tx = S.gtx();\n  \n  const water_income = tx.filter(x=>x.\u6536==='\u6536\u5165').reduce((s,x)=>s+(x.\u6c34\u8d39||0),0);\n  const elec_income = tx.filter(x=>x.\u6536==='\u6536\u5165').reduce((s,x)=>s+(x.\u7535\u8d39||0),0);\n  \n  // \u6309\u697c\u680b\u5206\u914d\n  const detail = {};\n  bills.forEach(b => {\n    const k = b.building+'-'+b.type;\n    if(!detail[k]) detail[k]={income:0,expense:0};\n    detail[k].expense += b.amount;\n  });\n  tx.filter(t=>t.\u6536==='\u6536\u5165'&&(t.\u6c34\u8d39||t.\u7535\u8d39)).forEach(t => {\n    const tenant = S.gt().find(x => x.name === t.\u5bf9\u65b9);\n    const room = tenant ? S.grm(tenant.roomId) : null;\n    const building = room ? room.building : '305\u680b';\n    if(t.\u7535\u8d39) {\n      const k = building+'-\u7535\u8d39';\n      if(!detail[k]) detail[k]={income:0,expense:0};\n      detail[k].income += t.\u7535\u8d39||0;\n    }\n    if(t.\u6c34\u8d39) {\n      const k = building+'-\u6c34\u8d39';\n      if(!detail[k]) detail[k]={income:0,expense:0};\n      detail[k].income += t.\u6c34\u8d39||0;\n    }\n  });\n  \n  const buildings = ['305\u680b','106\u680b'];\n  const types = ['\u7535\u8d39','\u6c34\u8d39'];\n  \n  m.innerHTML = `\n    <div class=\"ph\"><h2>\u6c34\u7535\u8d39\u7ba1\u7406</h2><button class=\"btn\" onclick=\"oab()\">+ \u6dfb\u52a0\u6284\u8868</button></div>\n    <div class=\"grid\" style=\"grid-template-columns:repeat(auto-fill,minmax(180px,1fr));\">\n      <div class=\"sc\"><div class=\"l\">\u6c34\u8d39\u6536\u5165</div><div class=\"v\">${fm(water_income)}</div></div>\n      <div class=\"sc\"><div class=\"l\">\u7535\u8d39\u6536\u5165</div><div class=\"v\">${fm(elec_income)}</div></div>\n      <div class=\"sc red\"><div class=\"l\">\u6c34\u7535\u8d39\u652f\u51fa</div><div class=\"v\">${fm(s.ue)}</div></div>\n      <div class=\"sc green\"><div class=\"l\">\u6c34\u7535\u8d39\u6bdb\u5229</div><div class=\"v\">${fm(s.up)}</div></div>\n    </div>\n    ${buildings.map(b => `\n      <h3 style=\"margin:16px 0 8px\">${b}</h3>\n      <table><thead><tr><th>\u7c7b\u578b</th><th>\u6536\u5165</th><th>\u652f\u51fa</th><th>\u6bdb\u5229</th></tr></thead><tbody>\n      ${types.map(tp => {\n        const k = b+'-'+tp;\n        const di = detail[k] || {income:0,expense:0};\n        return `<tr><td>${tp}</td><td class=\"ts\">${fm(di.income)}</td><td class=\"tr2\">${fm(di.expense)}</td><td class=\"${di.income-di.expense>=0?'ts':'tr2'}\">${fm(di.income-di.expense)}</td></tr>`;\n      }).join('')}\n      </tbody></table>\n    `).join('')}\n    <h3 style=\"margin:16px 0 8px\">\u6284\u8868\u8bb0\u5f55</h3>\n    <table><thead><tr><th>\u6708\u4efd</th><th>\u697c\u680b</th><th>\u7c7b\u578b</th><th>\u7528\u91cf</th><th>\u91d1\u989d</th><th>\u64cd\u4f5c</th></tr></thead><tbody>\n    ${bills.sort((a,b)=>b.month>a.month?1:-1).map(b => `<tr><td>${ml(b.month)}</td><td>${b.building}</td><td>${b.type}</td><td>${b.usage||'-'}</td><td>${fm(b.amount)}</td><td><button class=\"btn sm dr\" onclick=\"if(confirm('\u786e\u8ba4\u5220\u9664\uff1f')){S.gb().splice(S.gb().indexOf(b),1);S._save();r('utilities');}\">\u5220\u9664</button></td></tr>`).join('')}\n    </tbody></table>\n  `;\n}\nfunction oab() {\n  om(`<h3>\u6dfb\u52a0\u6284\u8868\u8bb0\u5f55</h3><div class=\"ff\"><label>\u6708\u4efd <input id=\"f_bm\" type=\"month\"></label><label>\u697c\u680b <select id=\"f_bb\"><option value=\"305\u680b\">305\u680b</option><option value=\"106\u680b\">106\u680b</option></select></label><label>\u7c7b\u578b <select id=\"f_bt\"><option value=\"\u7535\u8d39\">\u7535\u8d39</option><option value=\"\u6c34\u8d39\">\u6c34\u8d39</option></select></label><label>\u7528\u91cf <input id=\"f_bu\" type=\"number\" placeholder=\"\u7528\u91cf\"></label><label>\u91d1\u989d <input id=\"f_ba\" type=\"number\" placeholder=\"\u91d1\u989d\"></label><button class=\"btn\" onclick=\"sbb()\">\u4fdd\u5b58</button><button class=\"btn scd\" onclick=\"cm()\">\u53d6\u6d88</button></div>`);\n}\nfunction sbb() {\n  S.ab({month:$('f_bm').value,building:$('f_bb').value,type:$('f_bt').value,usage:parseFloat($('f_bu').value)||0,amount:parseFloat($('f_ba').value)||0});\n  cm(); r('utilities'); st('\u6284\u8868\u8bb0\u5f55\u6dfb\u52a0\u6210\u529f');\n}\n\n// ===== DEPOSITS =====\nfunction rdp(m,d) {\n  const now = new Date().toISOString().slice(0,10);\n  const total = d.tenants.reduce((s,t)=>s+(t.deposit||0),0);\n  const unreturned = d.tenants.filter(t=>!t.depositReturned).reduce((s,t)=>s+(t.deposit||0),0);\n  m.innerHTML = `\n    <div class=\"ph\"><h2>\u62bc\u91d1\u7ba1\u7406</h2></div>\n    <div class=\"grid\">\n      <div class=\"sc\"><div class=\"l\">\u62bc\u91d1\u603b\u989d</div><div class=\"v\">${fm(total)}</div></div>\n      <div class=\"sc green\"><div class=\"l\">\u5df2\u9000\u62bc\u91d1</div><div class=\"v\">${fm(total-unreturned)}</div></div>\n      <div class=\"sc red\"><div class=\"l\">\u672a\u9000\u62bc\u91d1</div><div class=\"v\">${fm(unreturned)}</div></div>\n    </div>\n    <table><thead><tr><th>\u79df\u6237</th><th>\u623f\u95f4</th><th>\u62bc\u91d1</th><th>\u72b6\u6001</th><th>\u5165\u4f4f</th><th>\u5230\u671f</th><th>\u64cd\u4f5c</th></tr></thead><tbody>\n    ${d.tenants.map(t => {\n      const r = S.grm(t.roomId);\n      return `<tr><td>${t.name}</td><td>${r?r.name:'-'}</td><td>${fm(t.deposit)}</td><td>${t.depositReturned?'<span class=\"tg\">\u5df2\u9000</span>':'<span class=\"tr\">\u672a\u9000</span>'}</td><td>${fd(t.startDate)}</td><td>${fd(t.endDate)}</td><td>${!t.depositReturned?`<button class=\"btn sm\" onclick=\"if(confirm('\u786e\u8ba4\u9000\u8fd8\u62bc\u91d1 \u00a5${t.deposit}\uff1f')){S.ut(t.id,{depositReturned:true});r('deposits');}\">\u9000\u8fd8</button>`:''}</td></tr>`;\n    }).join('')}\n    </tbody></table>\n  `;\n}\n\n// ===== REPORTS =====\nfunction rrp(m,d,s) {\n  const months = Object.keys(s.mm).sort();\n  m.innerHTML = `\n    <div class=\"ph\"><h2>\u62a5\u8868\u5206\u6790</h2></div>\n    <div class=\"grid\">\n      <div class=\"sc\"><div class=\"l\">\u603b\u6536\u5165</div><div class=\"v ts\">${fm(s.ti)}</div></div>\n      <div class=\"sc red\"><div class=\"l\">\u603b\u652f\u51fa</div><div class=\"v\">${fm(s.te)}</div></div>\n      <div class=\"sc green\"><div class=\"l\">\u51c0\u5229\u6da6</div><div class=\"v\">${fm(s.ni)}</div></div>\n    </div>\n    <div class=\"grid\">\n      <div class=\"sc\"><div class=\"l\">\u6c34\u8d39\u6536\u5165</div><div class=\"v ts\">${fm(s.wi_water)}</div></div>\n      <div class=\"sc\"><div class=\"l\">\u7535\u8d39\u6536\u5165</div><div class=\"v ts\">${fm(s.wi_elec)}</div></div>\n      <div class=\"sc red\"><div class=\"l\">\u6c34\u7535\u8d39\u652f\u51fa</div><div class=\"v\">${fm(s.ue)}</div></div>\n      <div class=\"sc green\"><div class=\"l\">\u6c34\u7535\u8d39\u6bdb\u5229</div><div class=\"v\">${fm(s.up)}</div></div>\n    </div>\n    <div class=\"gc\"><div class=\"gb\"><canvas id=\"c3\"></canvas></div></div>\n    <h3 style=\"margin:16px 0 8px\">\u6708\u5ea6\u6536\u652f\u660e\u7ec6</h3>\n    <table><thead><tr><th>\u6708\u4efd</th><th>\u6536\u5165</th><th>\u652f\u51fa</th><th>\u7ed3\u4f59</th></tr></thead><tbody>\n    ${months.map(m => {\n      const mi = s.mm[m].i, me = s.mm[m].e;\n      return `<tr><td>${ml(m)}</td><td class=\"ts\">${fm(mi)}</td><td class=\"tr2\">${fm(me)}</td><td class=\"${mi-me>=0?'ts':'tr2'}\">${fm(mi-me)}</td></tr>`;\n    }).join('')}\n    </tbody></table>\n    <h3 style=\"margin:16px 0 8px\">\u79df\u6237\u6765\u6e90\u5206\u5e03</h3>\n    <table><thead><tr><th>\u6765\u6e90</th><th>\u4eba\u6570</th></tr></thead><tbody>\n    ${Object.keys(s.sc).map(k => `<tr><td>${k}</td><td>${s.sc[k]}</td></tr>`).join('')}\n    </tbody></table>\n  `;\n  setTimeout(() => {\n    const c3=$('c3'); if(c3){if(charts.c3)charts.c3.destroy();const labels=months.map(m=>ml(m));const inc=months.map(m=>s.mm[m].i);const exp=months.map(m=>s.mm[m].e);charts.c3=new Chart(c3,{type:'bar',data:{labels,datasets:[{label:'\u6536\u5165',data:inc,backgroundColor:'#1a73e8'},{label:'\u652f\u51fa',data:exp,backgroundColor:'#d93025'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'\u00a5'+v.toLocaleString()}}}}});}\n  }, 100);\n}\n\n// ===== BACKUP =====\nfunction rbk(m,d) {\n  m.innerHTML = `\n    <div class=\"ph\"><h2>\u6570\u636e\u5907\u4efd</h2></div>\n    <div class=\"gc\"><div class=\"gb\">\n      <h3>\u5bfc\u51fa\u6570\u636e</h3>\n      <p style=\"color:var(--text2);margin:8px 0 16px;font-size:13px\">\u5c06\u6240\u6709\u6570\u636e\u5bfc\u51fa\u4e3a JSON \u6587\u4ef6\uff0c\u7528\u4e8e\u5907\u4efd\u6216\u8fc1\u79fb\u5230\u5176\u4ed6\u8bbe\u5907\u3002</p>\n      <button class=\"btn\" onclick=\"edt()\">\ud83d\udce5 \u5bfc\u51fa JSON</button>\n    </div><div class=\"gb\">\n      <h3>\u5bfc\u5165\u6570\u636e</h3>\n      <p style=\"color:var(--text2);margin:8px 0 16px;font-size:13px\">\u4ece JSON \u6587\u4ef6\u6062\u590d\u6570\u636e\uff0c\u4f1a\u8986\u76d6\u5f53\u524d\u6240\u6709\u6570\u636e\u3002</p>\n      <input type=\"file\" id=\"f_impf\" accept=\".json\" style=\"margin-bottom:8px\">\n      <button class=\"btn\" onclick=\"idt()\">\ud83d\udce4 \u5bfc\u5165 JSON</button>\n    </div></div>\n    <div class=\"gb\" style=\"margin-top:16px\">\n      <h3>\u6570\u636e\u7edf\u8ba1</h3>\n      <p style=\"color:var(--text2);margin:8px 0;font-size:13px\">\u623f\u95f4 ${d.rooms.length} \u95f4 \u00b7 \u79df\u6237 ${d.tenants.length} \u4eba \u00b7 \u6536\u652f\u8bb0\u5f55 ${d.ledger.length} \u6761 \u00b7 \u6284\u8868\u8bb0\u5f55 ${d.bills.length} \u6761</p>\n      <p style=\"color:var(--text2);font-size:12px\">\u4e91\u7aef\u540c\u6b65\uff1a${ENABLE_CLOUD_SYNC?'<span class=\"tg\">\u5df2\u542f\u7528</span>':'<span class=\"tr\">\u5df2\u5173\u95ed</span>'} \u00b7 Worker: ${WORKER_URL}</p>\n    </div>\n  `;\n}\nfunction edt() {\n  const json = S.exp();\n  const blob = new Blob([json], {type:'application/json'});\n  const a = document.createElement('a');\n  a.href = URL.createObjectURL(blob);\n  a.download = 'rent-manager-backup-'+new Date().toISOString().slice(0,10)+'.json';\n  a.click();\n  st('\u6570\u636e\u5df2\u5bfc\u51fa');\n}\nfunction idt() {\n  const file = $('f_impf').files[0];\n  if(!file) return st('\u8bf7\u9009\u62e9\u6587\u4ef6','e');\n  const reader = new FileReader();\n  reader.onload = function(e) {\n    try {\n      const data = JSON.parse(e.target.result);\n      S.imp(data);\n      r(window.location.hash.slice(1) || 'dashboard');\n      st('\u6570\u636e\u5bfc\u5165\u6210\u529f');\n    } catch(err) {\n      st('\u5bfc\u5165\u5931\u8d25\uff1a'+err.message,'e');\n    }\n  };\n  reader.readAsText(file);\n}\n\n// \u9875\u9762\u52a0\u8f7d\u65f6\u521d\u59cb\u5316\nwindow.addEventListener('DOMContentLoaded', async () => {\n  S.init();\n  // \u5c1d\u8bd5\u4ece\u4e91\u7aef\u540c\u6b65\u6570\u636e\n  const loaded = await S.initCloud();\n  if (!loaded) {\n    console.log('Using local data');\n  }\n  r(window.location.hash.slice(1) || 'dashboard');\n});\n</script>\n</body>\n</html>\n"
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>租房经营管理系统</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --primary: #1a73e8;
+  --primary-dark: #1557b0;
+  --primary-light: #e8f0fe;
+  --success: #0f9d58;
+  --success-bg: #e6f4ea;
+  --danger: #d93025;
+  --danger-bg: #fce8e6;
+  --warning: #f9ab00;
+  --warning-bg: #fef7e0;
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --text: #202124;
+  --text2: #5f6368;
+  --text3: #9aa0a6;
+  --border: #dadce0;
+  --hover: #f1f3f4;
+  --w: 240px;
+  --r: 12px;
+  --rs: 8px;
+  --sh: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shl: 0 4px 12px rgba(0,0,0,0.1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden;
+}
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0; width: var(--w);
+  background: var(--surface); border-right: 1px solid var(--border);
+  z-index: 100; display: flex; flex-direction: column; transition: transform .2s;
+}
+.sidebar h1 { font-size: 18px; font-weight: 700; color: var(--primary); padding: 20px 24px; border-bottom: 1px solid var(--border); }
+.sidebar h1 small { display: block; font-size: 12px; font-weight: 400; color: var(--text2); margin-top: 2px; }
+.nav { flex: 1; padding: 12px 8px; overflow-y: auto; }
+.nav a {
+  display: flex; align-items: center; gap: 10px; padding: 10px 16px; margin-bottom: 2px;
+  border-radius: var(--rs); cursor: pointer; font-size: 14px; color: var(--text2);
+  text-decoration: none; transition: all .2s;
+}
+.nav a:hover { background: var(--hover); color: var(--text); }
+.nav a.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+.nav a .badge { margin-left: auto; font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+.main { margin-left: var(--w); flex: 1; min-height: 100vh; }
+.ph { padding: 24px 32px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.ph h2 { font-size: 24px; font-weight: 600; }
+.ph .sub { font-size: 14px; color: var(--text2); margin-top: 4px; }
+.pb { padding: 24px 32px 40px; }
+.card { background: var(--surface); border-radius: var(--r); box-shadow: var(--sh); padding: 24px; margin-bottom: 20px; }
+.ch { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.ch h3 { font-size: 16px; font-weight: 600; }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.sc {
+  background: var(--surface); border-radius: var(--r); padding: 20px;
+  box-shadow: var(--sh); border-left: 4px solid var(--primary); transition: transform .2s;
+}
+.sc:hover { transform: translateY(-2px); }
+.sc .l { font-size: 13px; color: var(--text2); margin-bottom: 4px; }
+.sc .v { font-size: 28px; font-weight: 700; line-height: 1.2; }
+.sc .c { font-size: 12px; margin-top: 4px; }
+.sc .c.up { color: var(--success); }
+.sc .c.down { color: var(--danger); }
+.sc.green { border-left-color: var(--success); }
+.sc.red { border-left-color: var(--danger); }
+.sc.yellow { border-left-color: var(--warning); }
+.tc { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+thead th { background: var(--bg); padding: 12px 16px; text-align: left; font-weight: 600; font-size: 12px; color: var(--text2); border-bottom: 2px solid var(--border); white-space: nowrap; }
+tbody td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tbody tr:hover { background: var(--hover); }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+.tg { background: var(--success-bg); color: var(--success); }
+.tr { background: var(--danger-bg); color: var(--danger); }
+.tb { background: var(--primary-light); color: var(--primary); }
+.ty { background: var(--warning-bg); color: #e37400; }
+.tg2 { background: var(--bg); color: var(--text2); }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px; border-radius: var(--rs);
+  font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all .2s;
+}
+.btn-p { background: var(--primary); color: #fff; }
+.btn-p:hover { background: var(--primary-dark); box-shadow: var(--sh); }
+.btn-o { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+.btn-o:hover { background: var(--primary-light); }
+.btn-d { background: var(--danger); color: #fff; }
+.btn-d:hover { background: #c5221f; }
+.btn-s { padding: 4px 12px; font-size: 12px; }
+.btn-i { width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; border: none; cursor: pointer; background: transparent; color: var(--text2); }
+.btn-i:hover { background: var(--hover); color: var(--text); }
+.bg { display: flex; gap: 8px; flex-wrap: wrap; }
+.fg { margin-bottom: 16px; }
+.fg label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
+.fc {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--rs);
+  font-size: 14px; transition: border-color .2s; background: var(--surface);
+}
+.fc:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
+.fr { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.fa { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+select.fc { appearance: auto; }
+.mo {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none;
+  align-items: center; justify-content: center; backdrop-filter: blur(2px);
+}
+.mo.show { display: flex; }
+.mw {
+  background: var(--surface); border-radius: var(--r); width: 90%; max-width: 560px;
+  max-height: 85vh; overflow-y: auto; box-shadow: var(--shl); animation: mi .2s ease;
+}
+@keyframes mi { from { opacity: 0; transform: scale(.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.mh { padding: 20px 24px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+.mh h3 { font-size: 18px; font-weight: 600; }
+.mb { padding: 20px 24px; }
+.mf { padding: 12px 24px 20px; display: flex; gap: 8px; justify-content: flex-end; }
+.cc { position: relative; height: 300px; width: 100%; }
+.es { text-align: center; padding: 60px 20px; color: var(--text2); }
+.es .ic { font-size: 48px; margin-bottom: 12px; opacity: .5; }
+.es h4 { font-size: 16px; margin-bottom: 8px; color: var(--text); }
+.toast {
+  position: fixed; top: 20px; right: 20px; z-index: 2000;
+  padding: 12px 20px; border-radius: var(--rs); color: #fff; font-size: 14px; font-weight: 500;
+  box-shadow: var(--shl); animation: ti .3s ease; max-width: 360px;
+}
+.toast.s { background: var(--success); }
+.toast.e { background: var(--danger); }
+.toast.i { background: var(--primary); }
+@keyframes ti { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+.mt { display: none; position: fixed; top: 12px; left: 12px; z-index: 101; width: 40px; height: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--rs); cursor: pointer; }
+.mt:hover { background: var(--hover); }
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .mt { display: flex; }
+  .main { margin-left: 0; }
+  .ph { padding: 16px 16px 0; }
+  .pb { padding: 16px; }
+  .ph h2 { font-size: 20px; }
+  .grid { grid-template-columns: 1fr 1fr; }
+  .fr { grid-template-columns: 1fr; }
+  .mw { width: 95%; margin: 10px; }
+  .sc .v { font-size: 22px; }
+}
+@media (max-width: 480px) { .grid { grid-template-columns: 1fr; } .ph { flex-direction: column; align-items: flex-start; } }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.tr2 { text-align: right; }
+.tc2 { text-align: center; }
+.ts { color: var(--success); }
+.td { color: var(--danger); }
+.tp { color: var(--primary); }
+.tm { color: var(--text2); }
+.fb { font-weight: 600; }
+.mt2 { margin-top: 8px; }
+.mt4 { margin-top: 16px; }
+.mb4 { margin-bottom: 16px; }
+.fb2 { display: flex; justify-content: space-between; align-items: center; }
+.fb3 { display: flex; }
+.g2 { gap: 8px; }
+.g4 { gap: 16px; }
+.fl {
+  display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; align-items: center;
+}
+.fl .fc { width: auto; min-width: 140px; }
+.dr { display: flex; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.dr:last-child { border-bottom: none; }
+.dl { width: 120px; flex-shrink: 0; color: var(--text2); font-size: 13px; }
+.dv { flex: 1; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <button class="mt" onclick="ts()">☰</button>
+  <aside class="sidebar" id="sidebar">
+    <h1>🏠 租房管家<small>二房东经营管理系统</small></h1>
+    <nav class="nav" id="nav">
+      <a class="active" href="#dashboard" onclick="n('dashboard')">📊 仪表盘</a>
+      <a href="#tenants" onclick="n('tenants')">👥 租户管理 <span class="badge" id="tb">0</span></a>
+      <a href="#rooms" onclick="n('rooms')">🏢 房间管理 <span class="badge" id="rb">0</span></a>
+      <a href="#transactions" onclick="n('transactions')">💰 收支流水</a>
+      <a href="#ledger" onclick="n('ledger')">📒 流水台账</a>
+      <a href="#utilities" onclick="n('utilities')">⚡ 水电费管理</a>
+      <a href="#deposits" onclick="n('deposits')">🔒 押金管理</a>
+      <a href="#reports" onclick="n('reports')">📈 报表分析</a>
+      <a href="#backup" onclick="n('backup')">💾 数据备份</a>
+    </nav>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+
+<div class="mo" id="mo" onclick="if(event.target===this)cm()"><div class="mw" id="mc"></div></div>
+
+<script>
+// ===== CLOUDFLARE WORKERS CONFIG =====
+const WORKER_URL = 'https://rent-manager.tan20130420.workers.dev';
+const ENABLE_CLOUD_SYNC = true; // 设为 false 关闭云同步
+
+// ===== STORE =====
+const S = {
+  _d: null,
+  _def() {
+    return {
+      rooms: [
+        {id:'r1',name:'305-1',building:'305栋',rent:500,status:'在租',cur:null},
+        {id:'r2',name:'305-2',building:'305栋',rent:700,status:'在租',cur:null},
+        {id:'r3',name:'305-3',building:'305栋',rent:700,status:'在租',cur:null},
+        {id:'r4',name:'305-5',building:'305栋',rent:600,status:'在租',cur:null},
+        {id:'r5',name:'305-6',building:'305栋',rent:800,status:'在租',cur:null},
+        {id:'r6',name:'106-2',building:'106栋',rent:600,status:'在租',cur:null},
+        {id:'r7',name:'106-3',building:'106栋',rent:600,status:'在租',cur:null},
+        {id:'r8',name:'106-5',building:'106栋',rent:350,status:'在租',cur:null},
+        {id:'r9',name:'106-6',building:'106栋',rent:800,status:'在租',cur:null},
+      ],
+      tenants: [],
+      bills: [],
+      ledger: [],
+      nid: {r:10,t:100,b:100,l:100}
+    };
+  },
+  init() {
+    const s = localStorage.getItem('rentData');
+    if (s) { try { this._d = JSON.parse(s); } catch(e) { this._d = this._def(); } }
+    else { this._d = this._def(); this._seed(); }
+    // 兼容旧数据：升级时补充缺失字段
+    if(!this._d.ledger) this._d.ledger = [];
+    // 迁移旧版txs数据到ledger
+    if(this._d.txs && this._d.txs.length > 0 && this._d.ledger.length === 0) {
+      this._d.txs.forEach(t => {
+        this._d.ledger.push({
+          id: 'l' + (this._d.nid.l++),
+          交易时间: t.date + ' 0:00:00',
+          交易类: '转账',
+          对方: t.tenantId ? (this.gtm(t.tenantId)?.name||'') : '',
+          商品: t.note ? '转账备注:'+t.note : '',
+          收: t.type,
+          金额: t.amount,
+          支付方式: '',
+          状态: t.type==='收入'?'已存入零钱':'对方已收钱',
+          交易单号: '',
+          商户单号: '',
+          备注: t.note||'',
+          水费: t.wf||0,
+          电费: t.ef||0
+        });
+      });
+      delete this._d.txs;
+    }
+    if(!this._d.nid) this._d.nid = {r:10,t:100,b:100,l:100};
+    if(this._d.nid.l === undefined) this._d.nid.l = 100;
+    this._save();
+  },
+  async initCloud() {
+    if (!ENABLE_CLOUD_SYNC || !WORKER_URL) return false;
+    try {
+      const resp = await fetch(WORKER_URL + '/api/data');
+      if (resp.ok) {
+        const cloudData = await resp.json();
+        if (cloudData && cloudData.rooms && cloudData.ledger && cloudData.ledger.length > 0) {
+          // 仅当云端有数据时才覆盖本地
+          this._d = cloudData;
+          localStorage.setItem('rentData', JSON.stringify(this._d));
+          console.log('Loaded data from cloud (' + cloudData.ledger.length + ' records)');
+          return true;
+        } else if (cloudData && cloudData.rooms && this._d.ledger && this._d.ledger.length > 0) {
+          // 云端为空但本地有数据，把本地数据上传到云端
+          console.log('Local data has ' + this._d.ledger.length + ' records, uploading to cloud');
+          this._save();
+        }
+      }
+    } catch(e) {
+      console.log('Cloud load failed, using local data');
+    }
+    return false;
+  },
+  _save() { 
+    localStorage.setItem('rentData', JSON.stringify(this._d));
+    // 异步上传到 GitHub（不阻塞 UI）
+    // 使用ASCII安全序列化，避免中文乱码
+    if (ENABLE_CLOUD_SYNC && WORKER_URL) {
+      fetch(WORKER_URL + '/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(this._d).replace(/[\u0080-\uffff]/g, function(c) {
+          return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);
+        })
+      }).catch(e => console.log('Cloud sync failed:', e.message));
+    }
+  },
+  g() { return this._d; },
+
+  // Rooms
+  gr() { return this._d.rooms; },
+  grm(id) { return this._d.rooms.find(r => r.id === id); },
+  ar(r) { r.id = 'r' + (this._d.nid.r++); this._d.rooms.push(r); this._save(); return r; },
+  ur(id, u) { const i = this._d.rooms.findIndex(x => x.id === id); if(i>-1){Object.assign(this._d.rooms[i],u);this._save();return this._d.rooms[i];}return null; },
+
+  // Tenants
+  gt() { return this._d.tenants; },
+  gtm(id) { return this._d.tenants.find(t => t.id === id); },
+  at(t) { t.id = 't' + (this._d.nid.t++); this._d.tenants.push(t); const r = this.grm(t.roomId); if(r){r.cur=t.id;r.status='在租';} this._save(); return t; },
+  ut(id, u) { const i = this._d.tenants.findIndex(x => x.id === id); if(i>-1){Object.assign(this._d.tenants[i],u);this._save();return this._d.tenants[i];}return null; },
+  et(id, ed) {
+    const t = this.gtm(id); if(!t)return null;
+    t.endDate = ed; t.depositReturned = true;
+    const r = this.grm(t.roomId); if(r){r.cur=null;r.status='空置';}
+    this._save(); return t;
+  },
+
+  // Transactions (统一使用 ledger)
+  gtx() { return this._d.ledger; },
+  atx(t) { t.id = 'l' + (this._d.nid.l++); this._d.ledger.push(t); this._save(); return t; },
+  dtx(id) { this._d.ledger = this._d.ledger.filter(x => x.id !== id); this._save(); },
+
+  // Bills
+  gb() { return this._d.bills; },
+  ab(b) { b.id = 'b' + (this._d.nid.b++); this._d.bills.push(b); this._save(); return b; },
+
+  // Ledger (流水台账)
+  gl() { return this._d.ledger || []; },
+  al(l) { l.id = 'l' + (this._d.nid.l++); this._d.ledger.push(l); this._save(); return l; },
+  dl(id) { this._d.ledger = this._d.ledger.filter(x => x.id !== id); this._save(); },
+  ul(id, u) { const i = this._d.ledger.findIndex(x => x.id === id); if(i>-1){Object.assign(this._d.ledger[i],u);this._save();return this._d.ledger[i];}return null; },
+  batchAddLedger(rows) {
+    rows.forEach(r => { r.id = 'l' + (this._d.nid.l++); this._d.ledger.push(r); });
+    this._save();
+    return rows.length;
+  },
+
+  // Summary
+  sum() {
+    const tx = this._d.ledger;
+    const ti = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.金额||0),0);
+    const te = tx.filter(x=>x.收==='支出').reduce((s,x)=>s+(x.金额||0),0);
+    const now = new Date().toISOString().slice(0,10);
+    const at = this._d.tenants.filter(t => !t.endDate || t.endDate >= now).length;
+    const ar = this._d.rooms.filter(r => r.status === '在租').length;
+    const tr = this._d.rooms.length;
+    const dep = this._d.tenants.reduce((s,t)=>s+(t.deposit||0),0);
+    const ud = this._d.tenants.filter(t=>!t.depositReturned).reduce((s,t)=>s+(t.deposit||0),0);
+    const wi_water = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.水费||0),0);
+    const wi_elec = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.电费||0),0);
+    const we_water = tx.filter(x=>x.收==='支出').reduce((s,x)=>s+(x.水费||0),0);
+    const we_elec = tx.filter(x=>x.收==='支出').reduce((s,x)=>s+(x.电费||0),0);
+    const wi = wi_water + wi_elec;
+    const ue = this._d.bills.reduce((s,b)=>s+b.amount,0);
+    const mm = {};
+    tx.forEach(t => {
+      const m = (t.交易时间||'').substring(0,7); if(!m)return;
+      if(!mm[m]) mm[m] = {i:0,e:0};
+      if(t.收==='收入') mm[m].i += (t.金额||0); else mm[m].e += (t.金额||0);
+    });
+    const sc = {}; this._d.tenants.forEach(t => { sc[t.source] = (sc[t.source]||0)+1; });
+    return { ti, te, ni: ti-te, at, ar, tr, vr: tr>0?Math.round((1-ar/tr)*100):0, dep, ud, rd: dep-ud, wi, wi_water, wi_elec, we_water, we_elec, ue, up: wi-ue, mm, sc };
+  },
+
+  // Export
+  exp() { return JSON.stringify(this._d, null, 2); },
+  imp(d) {
+    if(d.rooms) this._d.rooms = d.rooms;
+    if(d.tenants) this._d.tenants = d.tenants;
+    if(d.bills) this._d.bills = d.bills;
+    if(d.ledger) this._d.ledger = d.ledger;
+    if(d.nid) this._d.nid = d.nid;
+    this._save();
+  },
+
+  _seed() {
+    const d = this._d;
+    d.tenants = [
+      {id:'t1',name:'睡得犯困了',phone:'',source:'小红书',roomId:'r3',startDate:'2025-10-05',endDate:'2026-01-14',deposit:850,depositReturned:true,notes:''},
+      {id:'t2',name:'木木乔',phone:'',source:'小红书',roomId:'r3',startDate:'2026-03-03',endDate:'2026-06-30',deposit:700,depositReturned:false,notes:''},
+      {id:'t3',name:'睡得犯困了',phone:'',source:'续住',roomId:'r5',startDate:'2026-02-28',endDate:'2026-07-14',deposit:800,depositReturned:false,notes:''},
+      {id:'t4',name:'友',phone:'',source:'中介-向前',roomId:'r5',startDate:'2025-09-26',endDate:'2026-01-25',deposit:800,depositReturned:true,notes:''},
+      {id:'t5',name:'.三提腊扣.',phone:'',source:'中介-向前',roomId:'r7',startDate:'2026-03-10',endDate:'2026-07-10',deposit:600,depositReturned:false,notes:''},
+      {id:'t6',name:'小可',phone:'',source:'中介-向前',roomId:'r1',startDate:'2026-01-17',endDate:'2026-07-17',deposit:500,depositReturned:false,notes:''},
+      {id:'t7',name:'青花',phone:'',source:'QQ群',roomId:'r2',startDate:'2026-03-30',endDate:'2026-07-14',deposit:700,depositReturned:false,notes:''},
+      {id:'t8',name:'小凡不烦',phone:'',source:'QQ群',roomId:'r8',startDate:'2026-03-05',endDate:'2026-07-04',deposit:350,depositReturned:false,notes:''},
+      {id:'t9',name:'zlei',phone:'',source:'小红书',roomId:'r9',startDate:'2025-12-08',endDate:'2026-03-30',deposit:700,depositReturned:true,notes:''},
+      {id:'t10',name:'早聆.',phone:'',source:'中介-向前',roomId:'r4',startDate:'2025-09-15',endDate:'2025-12-14',deposit:700,depositReturned:true,notes:''},
+      {id:'t11',name:'Ani126',phone:'',source:'中介-向前',roomId:'r4',startDate:'2026-03-01',endDate:'2026-07-01',deposit:600,depositReturned:false,notes:''},
+      {id:'t12',name:'浩浩.',phone:'',source:'QQ群',roomId:'r9',startDate:'2026-05-10',endDate:'2026-07-10',deposit:800,depositReturned:false,notes:''},
+      {id:'t13',name:'无事小神仙',phone:'',source:'中介-向前',roomId:'r1',startDate:'2025-09-12',endDate:'2025-11-22',deposit:500,depositReturned:true,notes:''},
+      {id:'t14',name:'Small volcano6',phone:'',source:'中介-向前',roomId:'r2',startDate:'2025-09-20',endDate:'2026-01-20',deposit:800,depositReturned:true,notes:''},
+      {id:'t15',name:'七斗星晋老师',phone:'',source:'推荐',roomId:'r9',startDate:'2026-04-10',endDate:'2026-05-10',deposit:100,depositReturned:true,notes:''},
+      {id:'t16',name:'风之影',phone:'',source:'推荐',roomId:'r6',startDate:'2026-03-03',endDate:'2026-03-21',deposit:100,depositReturned:true,notes:''},
+      {id:'t17',name:'枫雨礼',phone:'',source:'QQ群',roomId:'r6',startDate:'2026-01-10',endDate:'2026-01-25',deposit:100,depositReturned:true,notes:''},
+      {id:'t18',name:'愤怒的萝卜.',phone:'',source:'QQ群',roomId:'r3',startDate:'2026-01-14',endDate:'2026-02-13',deposit:100,depositReturned:true,notes:''},
+      {id:'t19',name:'秋遇瑾',phone:'',source:'QQ群',roomId:'r4',startDate:'2026-01-16',endDate:'2026-02-16',deposit:100,depositReturned:true,notes:''},
+      {id:'t20',name:'岛巷落灯',phone:'',source:'推荐',roomId:'r4',startDate:'2026-07-01',endDate:'2027-06-30',deposit:200,depositReturned:false,notes:''},
+      {id:'t21',name:'旺旺掀被',phone:'',source:'QQ群',roomId:'r6',startDate:'2026-04-05',endDate:'2026-07-14',deposit:600,depositReturned:false,notes:''},
+    ];
+    d.tenants.filter(t => !t.endDate || t.endDate >= '2026-06-13').forEach(t => {
+      const r = d.rooms.find(x => x.id === t.roomId); if(r){r.cur=t.id;r.status='在租';}
+    });
+    d.ledger = [];
+    d.bills = [];
+    this._save();
+  }
+};
+
+// ===== HELPERS =====
+let cp = 'dashboard', charts = {};
+function $(id) { return document.getElementById(id); }
+function fm(v) { return '¥' + Number(v).toLocaleString('zh-CN',{minF:2,maxF:2}); }
+function fd(d) { if(!d)return '-'; return new Date(d).toLocaleDateString('zh-CN'); }
+function ml(m) { if(!m)return ''; const [y,mm]=m.split('-'); return y+'年'+parseInt(mm)+'月'; }
+function rn(id) { const r=S.grm(id); return r?r.name:''; }
+function tn(id) { const t=S.gtm(id); return t?t.name:''; }
+function ts() { $('sidebar').classList.toggle('open'); }
+function n(p) { cp=p; window.location.hash=p; document.querySelectorAll('.nav a').forEach(e=>e.classList.remove('active')); const a=document.querySelector(`.nav a[href="#${p}"]`); if(a)a.classList.add('active'); r(p); }
+function st(msg,type='i') { const t=document.createElement('div'); t.className='toast '+type; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300)},3000); }
+function om(html) { $('mc').innerHTML=html; $('mo').classList.add('show'); }
+function cm() { $('mo').classList.remove('show'); }
+
+function r(p) {
+  const m = $('main');
+  const d = S.g();
+  const s = S.sum();
+  switch(p) {
+    case 'dashboard': rd(m,d,s); break;
+    case 'tenants': rt(m,d); break;
+    case 'rooms': rr(m,d); break;
+    case 'transactions': rl(m,d); break;
+    case 'ledger': rlf(m,d); break;
+    case 'ledger-full': rlf(m,d); break;
+    case 'utilities': ru(m); break;
+    case 'deposits': rdp(m,d); break;
+    case 'reports': rrp(m,d,s); break;
+    case 'backup': rbk(m,d); break;
+    default: m.innerHTML = '<div class="es"><div class="ic">🔧</div><h4>功能开发中</h4></div>';
+  }
+}
+
+// ===== DASHBOARD =====
+function rd(m,d,s) {
+  const now = new Date().toISOString().slice(0,10);
+  const month = now.substring(0,7);
+  const mi = d.ledger.filter(x=>x.收==='收入'&&(x.交易时间||'').startsWith(month)).reduce((a,x)=>a+(x.金额||0),0);
+  const me = d.ledger.filter(x=>x.收==='支出'&&(x.交易时间||'').startsWith(month)).reduce((a,x)=>a+(x.金额||0),0);
+  m.innerHTML = `
+    <div class="ph"><h2>仪表盘</h2><span class="dt">${now}</span></div>
+    <div class="grid">
+      <div class="sc"><div class="l">本月收入</div><div class="v ts">${fm(mi)}</div></div>
+      <div class="sc red"><div class="l">本月支出</div><div class="v">${fm(me)}</div></div>
+      <div class="sc green"><div class="l">本月结余</div><div class="v">${fm(mi-me)}</div></div>
+      <div class="sc"><div class="l">总收入</div><div class="v ts">${fm(s.ti)}</div></div>
+      <div class="sc red"><div class="l">总支出</div><div class="v">${fm(s.te)}</div></div>
+      <div class="sc green"><div class="l">净利润</div><div class="v">${fm(s.ni)}</div></div>
+    </div>
+    <div class="grid">
+      <div class="sc"><div class="l">在租房间</div><div class="v">${s.ar}/${s.tr}</div><div class="c">出租率 ${s.vr}%</div></div>
+      <div class="sc"><div class="l">在租租户</div><div class="v">${s.at}</div></div>
+      <div class="sc"><div class="l">押金总额</div><div class="v">${fm(s.dep)}</div><div class="c">未退 ${fm(s.ud)}</div></div>
+      <div class="sc"><div class="l">水费收入</div><div class="v ts">${fm(s.wi_water)}</div></div>
+      <div class="sc"><div class="l">电费收入</div><div class="v ts">${fm(s.wi_elec)}</div></div>
+      <div class="sc red"><div class="l">水电费支出</div><div class="v">${fm(s.ue)}</div></div>
+    </div>
+    <div class="gc"><div class="gb"><canvas id="c1"></canvas></div><div class="gb"><canvas id="c2"></canvas></div></div>
+  `;
+  setTimeout(() => {
+    const c1=$('c1'); if(c1){if(charts.c1)charts.c1.destroy();charts.c1=new Chart(c1,{type:'doughnut',data:{labels:['收入','支出'],datasets:[{data:[s.ti,s.te],backgroundColor:['#1a73e8','#d93025'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:ctx=>ctx.label+': '+fm(ctx.raw)}}}}});}
+    const c2=$('c2'); if(c2){if(charts.c2)charts.c2.destroy();charts.c2=new Chart(c2,{type:'doughnut',data:{labels:['水费收入','电费收入','水电费支出'],datasets:[{data:[s.wi_water,s.wi_elec,s.ue],backgroundColor:['#1a73e8','#0f9d58','#d93025'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:ctx=>ctx.label+': '+fm(ctx.raw)}}}}});}
+  }, 100);
+}
+
+// ===== TENANTS =====
+function rt(m,d) {
+  const now = new Date().toISOString().slice(0,10);
+  m.innerHTML = `
+    <div class="ph"><h2>租户管理</h2><button class="btn" onclick="oat()">+ 添加租户</button></div>
+    <table><thead><tr><th>姓名</th><th>房间</th><th>手机</th><th>来源</th><th>入住</th><th>到期</th><th>押金</th><th>状态</th><th>操作</th></tr></thead><tbody>
+    ${d.tenants.map(t => {
+      const r = S.grm(t.roomId);
+      const expired = t.endDate && t.endDate < now;
+      return `<tr class="${expired?'ex':''}"><td>${t.name}</td><td>${r?r.name:'-'}</td><td>${t.phone||'-'}</td><td>${t.source||'-'}</td><td>${fd(t.startDate)}</td><td>${fd(t.endDate)}</td><td>${fm(t.deposit)}</td><td>${t.depositReturned?'<span class="tg">已退</span>':expired?'<span class="tr">已到期</span>':'<span class="tg">在租</span>'}</td><td><button class="btn sm" onclick="ot('${t.id}')">编辑</button>${!t.depositReturned&&t.endDate?` <button class="btn sm dr" onclick="if(confirm('确认退租？')){S.et('${t.id}','${now}');r('tenants');}">退租</button>`:''}</td></tr>`;
+    }).join('')}
+    </tbody></table>
+  `;
+}
+function oat() {
+  const rooms = S.gr().filter(r => r.status === '空置' || !r.status);
+  om(`
+    <h3>添加租户</h3>
+    <div class="ff">
+      <label>姓名 <input id="f_tn" placeholder="租户姓名"></label>
+      <label>手机 <input id="f_tp" placeholder="手机号"></label>
+      <label>来源 <input id="f_ts" placeholder="来源（如小红书、QQ群）"></label>
+      <label>房间 <select id="f_tr">${rooms.map(r=>'<option value="'+r.id+'">'+r.name+'</option>').join('')}</select></label>
+      <label>入住日期 <input id="f_tsd" type="date" value="${new Date().toISOString().slice(0,10)}"></label>
+      <label>到期日期 <input id="f_ted" type="date"></label>
+      <label>押金 <input id="f_tdep" type="number" placeholder="押金金额"></label>
+      <label>备注 <input id="f_tn2" placeholder="备注"></label>
+      <button class="btn" onclick="sbt()">保存</button>
+      <button class="btn scd" onclick="cm()">取消</button>
+    </div>
+  `);
+}
+function sbt() {
+  const tn = $('f_tn'), tp = $('f_tp'), ts = $('f_ts'), tr = $('f_tr'), tsd = $('f_tsd'), ted = $('f_ted'), tdep = $('f_tdep'), tn2 = $('f_tn2');
+  if(!tn.value.trim()) return st('请输入姓名','e');
+  S.at({name:tn.value.trim(),phone:tp.value.trim(),source:ts.value.trim(),roomId:tr.value,startDate:tsd.value,endDate:ted.value||null,deposit:parseFloat(tdep.value)||0,depositReturned:false,notes:tn2.value.trim()});
+  cm(); r('tenants'); st('租户添加成功');
+}
+function ot(id) {
+  const t = S.gtm(id);
+  const rooms = S.gr();
+  om(`
+    <h3>编辑租户</h3>
+    <div class="ff">
+      <label>姓名 <input id="f_tn" value="${t.name}"></label>
+      <label>手机 <input id="f_tp" value="${t.phone||''}"></label>
+      <label>来源 <input id="f_ts" value="${t.source||''}"></label>
+      <label>房间 <select id="f_tr">${rooms.map(r=>'<option value="'+r.id+'"'+(r.id===t.roomId?' selected':'')+'>'+r.name+'</option>').join('')}</select></label>
+      <label>入住日期 <input id="f_tsd" type="date" value="${t.startDate||''}"></label>
+      <label>到期日期 <input id="f_ted" type="date" value="${t.endDate||''}"></label>
+      <label>押金 <input id="f_tdep" type="number" value="${t.deposit}"></label>
+      <label>备注 <input id="f_tn2" value="${t.notes||''}"></label>
+      <button class="btn" onclick="sbt2('${id}')">保存</button>
+      <button class="btn scd" onclick="cm()">取消</button>
+    </div>
+  `);
+}
+function sbt2(id) {
+  S.ut(id,{name:$('f_tn').value.trim(),phone:$('f_tp').value.trim(),source:$('f_ts').value.trim(),roomId:$('f_tr').value,startDate:$('f_tsd').value,endDate:$('f_ted').value||null,deposit:parseFloat($('f_tdep').value)||0,notes:$('f_tn2').value.trim()});
+  cm(); r('tenants'); st('租户已更新');
+}
+
+// ===== ROOMS =====
+function rr(m,d) {
+  m.innerHTML = `
+    <div class="ph"><h2>房间管理</h2><button class="btn" onclick="oar()">+ 添加房间</button></div>
+    <table><thead><tr><th>房间</th><th>楼栋</th><th>租金</th><th>状态</th><th>当前租户</th><th>操作</th></tr></thead><tbody>
+    ${d.rooms.map(r => {
+      const t = r.cur ? S.gtm(r.cur) : null;
+      return `<tr><td>${r.name}</td><td>${r.building}</td><td>${fm(r.rent)}</td><td>${r.status==='在租'?'<span class="tg">在租</span>':'<span class="tr">空置</span>'}</td><td>${t?t.name:'-'}</td><td><button class="btn sm" onclick="oer('${r.id}')">编辑</button></td></tr>`;
+    }).join('')}
+    </tbody></table>
+  `;
+}
+function oar() {
+  om(`<h3>添加房间</h3><div class="ff"><label>房间名 <input id="f_rn" placeholder="如 305-1"></label><label>楼栋 <select id="f_rb"><option value="305栋">305栋</option><option value="106栋">106栋</option></select></label><label>租金 <input id="f_rr" type="number" placeholder="月租金"></label><button class="btn" onclick="sbr()">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sbr() {
+  const n=$('f_rn'),b=$('f_rb'),r=$('f_rr');
+  if(!n.value.trim()||!r.value) return st('请填写完整','e');
+  S.ar({name:n.value.trim(),building:b.value,rent:parseFloat(r.value),status:'空置',cur:null});
+  cm(); r('rooms'); st('房间添加成功');
+}
+function oer(id) {
+  const rm = S.grm(id);
+  om(`<h3>编辑房间</h3><div class="ff"><label>房间名 <input id="f_rn" value="${rm.name}"></label><label>楼栋 <select id="f_rb"><option value="305栋"${rm.building==='305栋'?' selected':''}>305栋</option><option value="106栋"${rm.building==='106栋'?' selected':''}>106栋</option></select></label><label>租金 <input id="f_rr" type="number" value="${rm.rent}"></label><button class="btn" onclick="sbr2('${id}')">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sbr2(id) {
+  S.ur(id,{name:$('f_rn').value.trim(),building:$('f_rb').value,rent:parseFloat($('f_rr').value)||0});
+  cm(); r('rooms'); st('房间已更新');
+}
+
+// ===== LEDGER (收支流水) =====
+function rl(m,d) {
+  const tx = d.ledger.filter(x=>x.收==='收入').sort((a,b)=>(b.交易时间||'')>(a.交易时间||'')?1:-1);
+  m.innerHTML = `
+    <div class="ph"><h2>收支流水</h2><button class="btn" onclick="oatx()">+ 添加收入</button></div>
+    <table><thead><tr><th>时间</th><th>对方</th><th>金额</th><th>水费</th><th>电费</th><th>备注</th><th>操作</th></tr></thead><tbody>
+    ${tx.map(t => `<tr><td>${(t.交易时间||'').substring(0,10)}</td><td>${t.对方||''}</td><td class="ts">${fm(t.金额)}</td><td>${t.水费?fm(t.水费):'-'}</td><td>${t.电费?fm(t.电费):'-'}</td><td>${t.备注||''}</td><td><button class="btn sm" onclick="oetx('${t.id}')">编辑</button></td></tr>`).join('')}
+    </tbody></table>
+  `;
+}
+function oatx() {
+  om(`<h3>添加收入</h3><div class="ff"><label>时间 <input id="f_lt" type="datetime-local"></label><label>对方 <input id="f_lp" placeholder="租户名"></label><label>金额 <input id="f_la" type="number" placeholder="收入金额"></label><label>水费 <input id="f_lw" type="number" placeholder="水费"></label><label>电费 <input id="f_le" type="number" placeholder="电费"></label><label>备注 <input id="f_ln" placeholder="备注"></label><button class="btn" onclick="sbtx()">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sbtx() {
+  const t=$('f_lt'),p=$('f_lp'),a=$('f_la'),w=$('f_lw'),e=$('f_le'),n=$('f_ln');
+  if(!a.value) return st('请输入金额','e');
+  S.atx({交易时间:(t.value||new Date().toISOString().slice(0,16))+':00',交易类:'转账',对方:p.value.trim(),商品:'',收:'收入',金额:parseFloat(a.value),支付方式:'',状态:'已存入零钱',交易单号:'',商户单号:'',备注:n.value.trim(),水费:parseFloat(w.value)||0,电费:parseFloat(e.value)||0});
+  cm(); r('ledger'); st('收入添加成功');
+}
+function oetx(id) {
+  const t = S.gtx().find(x=>x.id===id);
+  if(!t) return;
+  om(`<h3>编辑收入</h3><div class="ff"><label>时间 <input id="f_lt" type="datetime-local" value="${(t.交易时间||'').substring(0,16)}"></label><label>对方 <input id="f_lp" value="${t.对方||''}"></label><label>金额 <input id="f_la" type="number" value="${t.金额}"></label><label>水费 <input id="f_lw" type="number" value="${t.水费||0}"></label><label>电费 <input id="f_le" type="number" value="${t.电费||0}"></label><label>备注 <input id="f_ln" value="${t.备注||''}"></label><button class="btn" onclick="sbtx2('${id}')">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sbtx2(id) {
+  S.ul(id,{交易时间:($('f_lt').value||new Date().toISOString().slice(0,16))+':00',对方:$('f_lp').value.trim(),金额:parseFloat($('f_la').value)||0,水费:parseFloat($('f_lw').value)||0,电费:parseFloat($('f_le').value)||0,备注:$('f_ln').value.trim()});
+  cm(); r('ledger'); st('已更新');
+}
+
+// ===== LEDGER FULL (流水台账) =====
+function rlf(m,d) {
+  const tx = [...d.ledger].sort((a,b)=>(b.交易时间||'')>(a.交易时间||'')?1:-1);
+  m.innerHTML = `
+    <div class="ph"><h2>流水台账</h2><button class="btn" onclick="oalf()">+ 添加记录</button><button class="btn scd" onclick="ilg()" style="margin-left:8px">📋 粘贴导入</button></div>
+    <div class="tbw"><table><thead><tr><th>时间</th><th>类型</th><th>对方</th><th>商品</th><th>收/支</th><th>金额</th><th>支付方式</th><th>状态</th><th>水费</th><th>电费</th><th>备注</th><th>操作</th></tr></thead><tbody>
+    ${tx.map(t => `<tr class="${t.收==='支出'?'ex':''}"><td>${(t.交易时间||'').substring(0,10)}</td><td>${t.交易类||''}</td><td>${t.对方||''}</td><td>${t.商品||''}</td><td>${t.收}</td><td class="${t.收==='收入'?'ts':'tr2'}">${fm(t.金额)}</td><td>${t.支付方式||''}</td><td>${t.状态||''}</td><td>${t.水费?fm(t.水费):'-'}</td><td>${t.电费?fm(t.电费):'-'}</td><td>${t.备注||''}</td><td><button class="btn sm" onclick="oelf('${t.id}')">编辑</button> <button class="btn sm dr" onclick="if(confirm('确认删除？')){S.dl('${t.id}');r('ledger-full');}">删除</button></td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="st">共 ${tx.length} 笔记录 · <a href="#" onclick="ilg();return false">从微信/Excel 直接粘贴</a></div>
+  `;
+}
+function oalf() {
+  om(`<h3>添加台账记录</h3><div class="ff"><label>时间 <input id="f_lft" type="datetime-local"></label><label>类型 <input id="f_lftype" value="转账"></label><label>对方 <input id="f_lfp" placeholder="对方"></label><label>商品 <input id="f_lfg" placeholder="商品说明"></label><label>收/支 <select id="f_lfio"><option value="收入">收入</option><option value="支出">支出</option></select></label><label>金额 <input id="f_lfa" type="number" placeholder="金额"></label><label>支付方式 <input id="f_lfpm" placeholder="支付方式"></label><label>状态 <input id="f_lfst" placeholder="状态"></label><label>水费 <input id="f_lfw" type="number" placeholder="水费"></label><label>电费 <input id="f_lfe" type="number" placeholder="电费"></label><label>备注 <input id="f_lfn" placeholder="备注"></label><button class="btn" onclick="sblf()">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sblf() {
+  S.al({交易时间:($('f_lft').value||new Date().toISOString().slice(0,16))+':00',交易类:$('f_lftype').value.trim(),对方:$('f_lfp').value.trim(),商品:$('f_lfg').value.trim(),收:$('f_lfio').value,金额:parseFloat($('f_lfa').value)||0,支付方式:$('f_lfpm').value.trim(),状态:$('f_lfst').value.trim(),交易单号:'',商户单号:'',备注:$('f_lfn').value.trim(),水费:parseFloat($('f_lfw').value)||0,电费:parseFloat($('f_lfe').value)||0});
+  cm(); r('ledger-full'); st('记录添加成功');
+}
+function oelf(id) {
+  const t = S.gl().find(x=>x.id===id);
+  if(!t) return;
+  om(`<h3>编辑台账记录</h3><div class="ff"><label>时间 <input id="f_lft" type="datetime-local" value="${(t.交易时间||'').substring(0,16)}"></label><label>类型 <input id="f_lftype" value="${t.交易类||''}"></label><label>对方 <input id="f_lfp" value="${t.对方||''}"></label><label>商品 <input id="f_lfg" value="${t.商品||''}"></label><label>收/支 <select id="f_lfio"><option value="收入"${t.收==='收入'?' selected':''}>收入</option><option value="支出"${t.收==='支出'?' selected':''}>支出</option></select></label><label>金额 <input id="f_lfa" type="number" value="${t.金额}"></label><label>支付方式 <input id="f_lfpm" value="${t.支付方式||''}"></label><label>状态 <input id="f_lfst" value="${t.状态||''}"></label><label>水费 <input id="f_lfw" type="number" value="${t.水费||0}"></label><label>电费 <input id="f_lfe" type="number" value="${t.电费||0}"></label><label>备注 <input id="f_lfn" value="${t.备注||''}"></label><button class="btn" onclick="sblf2('${id}')">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sblf2(id) {
+  S.ul(id,{交易时间:($('f_lft').value||new Date().toISOString().slice(0,16))+':00',交易类:$('f_lftype').value.trim(),对方:$('f_lfp').value.trim(),商品:$('f_lfg').value.trim(),收:$('f_lfio').value,金额:parseFloat($('f_lfa').value)||0,支付方式:$('f_lfpm').value.trim(),状态:$('f_lfst').value.trim(),备注:$('f_lfn').value.trim(),水费:parseFloat($('f_lfw').value)||0,电费:parseFloat($('f_lfe').value)||0});
+  cm(); r('ledger-full'); st('已更新');
+}
+function ilg() {
+  om(`<h3>从微信/Excel 粘贴导入</h3><p style="color:var(--text2);margin-bottom:12px;font-size:13px">从微信账单或Excel复制数据行，直接粘贴到下方文本框</p><textarea id="f_imp" style="width:100%;height:200px;padding:8px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:monospace" placeholder="粘贴数据..."></textarea><div style="margin-top:8px;display:flex;gap:8px"><button class="btn" onclick="doi()">导入</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function doi() {
+  const txt = $('f_imp').value.trim();
+  if(!txt) return st('请粘贴数据','e');
+  const rows = txt.split('\n').filter(r=>r.trim());
+  let count = 0;
+  rows.forEach(row => {
+    const cols = row.split('\t');
+    if(cols.length < 6) return;
+    S.al({
+      交易时间: cols[0]||'',
+      交易类: cols[1]||'',
+      对方: cols[2]||'',
+      商品: cols[3]||'',
+      收: cols[4]||'',
+      金额: parseFloat(cols[5])||0,
+      支付方式: cols[6]||'',
+      状态: cols[7]||'',
+      交易单号: cols[8]||'',
+      商户单号: cols[9]||'',
+      备注: cols[10]||'',
+      水费: parseFloat(cols[11])||0,
+      电费: parseFloat(cols[12])||0
+    });
+    count++;
+  });
+  cm(); r('ledger-full'); st('成功导入 '+count+' 条记录');
+}
+
+// ===== UTILITIES =====
+function ru(m) {
+  const s = S.sum();
+  const bills = S.gb();
+  const tx = S.gtx();
+  
+  const water_income = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.水费||0),0);
+  const elec_income = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.电费||0),0);
+  
+  // 按楼栋分配
+  const detail = {};
+  bills.forEach(b => {
+    const k = b.building+'-'+b.type;
+    if(!detail[k]) detail[k]={income:0,expense:0};
+    detail[k].expense += b.amount;
+  });
+  tx.filter(t=>t.收==='收入'&&(t.水费||t.电费)).forEach(t => {
+    const tenant = S.gt().find(x => x.name === t.对方);
+    const room = tenant ? S.grm(tenant.roomId) : null;
+    const building = room ? room.building : '305栋';
+    if(t.电费) {
+      const k = building+'-电费';
+      if(!detail[k]) detail[k]={income:0,expense:0};
+      detail[k].income += t.电费||0;
+    }
+    if(t.水费) {
+      const k = building+'-水费';
+      if(!detail[k]) detail[k]={income:0,expense:0};
+      detail[k].income += t.水费||0;
+    }
+  });
+  
+  const buildings = ['305栋','106栋'];
+  const types = ['电费','水费'];
+  
+  m.innerHTML = `
+    <div class="ph"><h2>水电费管理</h2><button class="btn" onclick="oab()">+ 添加抄表</button></div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));">
+      <div class="sc"><div class="l">水费收入</div><div class="v">${fm(water_income)}</div></div>
+      <div class="sc"><div class="l">电费收入</div><div class="v">${fm(elec_income)}</div></div>
+      <div class="sc red"><div class="l">水电费支出</div><div class="v">${fm(s.ue)}</div></div>
+      <div class="sc green"><div class="l">水电费毛利</div><div class="v">${fm(s.up)}</div></div>
+    </div>
+    ${buildings.map(b => `
+      <h3 style="margin:16px 0 8px">${b}</h3>
+      <table><thead><tr><th>类型</th><th>收入</th><th>支出</th><th>毛利</th></tr></thead><tbody>
+      ${types.map(tp => {
+        const k = b+'-'+tp;
+        const di = detail[k] || {income:0,expense:0};
+        return `<tr><td>${tp}</td><td class="ts">${fm(di.income)}</td><td class="tr2">${fm(di.expense)}</td><td class="${di.income-di.expense>=0?'ts':'tr2'}">${fm(di.income-di.expense)}</td></tr>`;
+      }).join('')}
+      </tbody></table>
+    `).join('')}
+    <h3 style="margin:16px 0 8px">抄表记录</h3>
+    <table><thead><tr><th>月份</th><th>楼栋</th><th>类型</th><th>用量</th><th>金额</th><th>操作</th></tr></thead><tbody>
+    ${bills.sort((a,b)=>b.month>a.month?1:-1).map(b => `<tr><td>${ml(b.month)}</td><td>${b.building}</td><td>${b.type}</td><td>${b.usage||'-'}</td><td>${fm(b.amount)}</td><td><button class="btn sm dr" onclick="if(confirm('确认删除？')){S.gb().splice(S.gb().indexOf(b),1);S._save();r('utilities');}">删除</button></td></tr>`).join('')}
+    </tbody></table>
+  `;
+}
+function oab() {
+  om(`<h3>添加抄表记录</h3><div class="ff"><label>月份 <input id="f_bm" type="month"></label><label>楼栋 <select id="f_bb"><option value="305栋">305栋</option><option value="106栋">106栋</option></select></label><label>类型 <select id="f_bt"><option value="电费">电费</option><option value="水费">水费</option></select></label><label>用量 <input id="f_bu" type="number" placeholder="用量"></label><label>金额 <input id="f_ba" type="number" placeholder="金额"></label><button class="btn" onclick="sbb()">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sbb() {
+  S.ab({month:$('f_bm').value,building:$('f_bb').value,type:$('f_bt').value,usage:parseFloat($('f_bu').value)||0,amount:parseFloat($('f_ba').value)||0});
+  cm(); r('utilities'); st('抄表记录添加成功');
+}
+
+// ===== DEPOSITS =====
+function rdp(m,d) {
+  const now = new Date().toISOString().slice(0,10);
+  const total = d.tenants.reduce((s,t)=>s+(t.deposit||0),0);
+  const unreturned = d.tenants.filter(t=>!t.depositReturned).reduce((s,t)=>s+(t.deposit||0),0);
+  m.innerHTML = `
+    <div class="ph"><h2>押金管理</h2></div>
+    <div class="grid">
+      <div class="sc"><div class="l">押金总额</div><div class="v">${fm(total)}</div></div>
+      <div class="sc green"><div class="l">已退押金</div><div class="v">${fm(total-unreturned)}</div></div>
+      <div class="sc red"><div class="l">未退押金</div><div class="v">${fm(unreturned)}</div></div>
+    </div>
+    <table><thead><tr><th>租户</th><th>房间</th><th>押金</th><th>状态</th><th>入住</th><th>到期</th><th>操作</th></tr></thead><tbody>
+    ${d.tenants.map(t => {
+      const r = S.grm(t.roomId);
+      return `<tr><td>${t.name}</td><td>${r?r.name:'-'}</td><td>${fm(t.deposit)}</td><td>${t.depositReturned?'<span class="tg">已退</span>':'<span class="tr">未退</span>'}</td><td>${fd(t.startDate)}</td><td>${fd(t.endDate)}</td><td>${!t.depositReturned?`<button class="btn sm" onclick="if(confirm('确认退还押金 ¥${t.deposit}？')){S.ut(t.id,{depositReturned:true});r('deposits');}">退还</button>`:''}</td></tr>`;
+    }).join('')}
+    </tbody></table>
+  `;
+}
+
+// ===== REPORTS =====
+function rrp(m,d,s) {
+  const months = Object.keys(s.mm).sort();
+  m.innerHTML = `
+    <div class="ph"><h2>报表分析</h2></div>
+    <div class="grid">
+      <div class="sc"><div class="l">总收入</div><div class="v ts">${fm(s.ti)}</div></div>
+      <div class="sc red"><div class="l">总支出</div><div class="v">${fm(s.te)}</div></div>
+      <div class="sc green"><div class="l">净利润</div><div class="v">${fm(s.ni)}</div></div>
+    </div>
+    <div class="grid">
+      <div class="sc"><div class="l">水费收入</div><div class="v ts">${fm(s.wi_water)}</div></div>
+      <div class="sc"><div class="l">电费收入</div><div class="v ts">${fm(s.wi_elec)}</div></div>
+      <div class="sc red"><div class="l">水电费支出</div><div class="v">${fm(s.ue)}</div></div>
+      <div class="sc green"><div class="l">水电费毛利</div><div class="v">${fm(s.up)}</div></div>
+    </div>
+    <div class="gc"><div class="gb"><canvas id="c3"></canvas></div></div>
+    <h3 style="margin:16px 0 8px">月度收支明细</h3>
+    <table><thead><tr><th>月份</th><th>收入</th><th>支出</th><th>结余</th></tr></thead><tbody>
+    ${months.map(m => {
+      const mi = s.mm[m].i, me = s.mm[m].e;
+      return `<tr><td>${ml(m)}</td><td class="ts">${fm(mi)}</td><td class="tr2">${fm(me)}</td><td class="${mi-me>=0?'ts':'tr2'}">${fm(mi-me)}</td></tr>`;
+    }).join('')}
+    </tbody></table>
+    <h3 style="margin:16px 0 8px">租户来源分布</h3>
+    <table><thead><tr><th>来源</th><th>人数</th></tr></thead><tbody>
+    ${Object.keys(s.sc).map(k => `<tr><td>${k}</td><td>${s.sc[k]}</td></tr>`).join('')}
+    </tbody></table>
+  `;
+  setTimeout(() => {
+    const c3=$('c3'); if(c3){if(charts.c3)charts.c3.destroy();const labels=months.map(m=>ml(m));const inc=months.map(m=>s.mm[m].i);const exp=months.map(m=>s.mm[m].e);charts.c3=new Chart(c3,{type:'bar',data:{labels,datasets:[{label:'收入',data:inc,backgroundColor:'#1a73e8'},{label:'支出',data:exp,backgroundColor:'#d93025'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'¥'+v.toLocaleString()}}}}});}
+  }, 100);
+}
+
+// ===== BACKUP =====
+function rbk(m,d) {
+  m.innerHTML = `
+    <div class="ph"><h2>数据备份</h2></div>
+    <div class="gc"><div class="gb">
+      <h3>导出数据</h3>
+      <p style="color:var(--text2);margin:8px 0 16px;font-size:13px">将所有数据导出为 JSON 文件，用于备份或迁移到其他设备。</p>
+      <button class="btn" onclick="edt()">📥 导出 JSON</button>
+    </div><div class="gb">
+      <h3>导入数据</h3>
+      <p style="color:var(--text2);margin:8px 0 16px;font-size:13px">从 JSON 文件恢复数据，会覆盖当前所有数据。</p>
+      <input type="file" id="f_impf" accept=".json" style="margin-bottom:8px">
+      <button class="btn" onclick="idt()">📤 导入 JSON</button>
+    </div></div>
+    <div class="gb" style="margin-top:16px">
+      <h3>数据统计</h3>
+      <p style="color:var(--text2);margin:8px 0;font-size:13px">房间 ${d.rooms.length} 间 · 租户 ${d.tenants.length} 人 · 收支记录 ${d.ledger.length} 条 · 抄表记录 ${d.bills.length} 条</p>
+      <p style="color:var(--text2);font-size:12px">云端同步：${ENABLE_CLOUD_SYNC?'<span class="tg">已启用</span>':'<span class="tr">已关闭</span>'} · Worker: ${WORKER_URL}</p>
+    </div>
+  `;
+}
+function edt() {
+  const json = S.exp();
+  const blob = new Blob([json], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'rent-manager-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  st('数据已导出');
+}
+function idt() {
+  const file = $('f_impf').files[0];
+  if(!file) return st('请选择文件','e');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      S.imp(data);
+      r(window.location.hash.slice(1) || 'dashboard');
+      st('数据导入成功');
+    } catch(err) {
+      st('导入失败：'+err.message,'e');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// 页面加载时初始化
+window.addEventListener('DOMContentLoaded', async () => {
+  S.init();
+  // 尝试从云端同步数据
+  const loaded = await S.initCloud();
+  if (!loaded) {
+    console.log('Using local data');
+  }
+  r(window.location.hash.slice(1) || 'dashboard');
+});
+</script>
+</body>
+</html>
