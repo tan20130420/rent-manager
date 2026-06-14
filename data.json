@@ -2,311 +2,320 @@
   "rooms": [
     {
       "id": "r1",
-      "name": "305-1",
-      "building": "305æ ",
+      "building": "305栋",
+      "number": "301",
+      "floor": "3层",
+      "area": 15,
       "rent": 500,
-      "status": "å¨ç§",
-      "cur": null
+      "status": "在租"
     },
     {
       "id": "r2",
-      "name": "305-2",
-      "building": "305æ ",
+      "building": "305栋",
+      "number": "302",
+      "floor": "3层",
+      "area": 15,
       "rent": 700,
-      "status": "å¨ç§",
-      "cur": null
+      "status": "在租"
     },
     {
       "id": "r3",
-      "name": "305-3",
-      "building": "305æ ",
+      "building": "305栋",
+      "number": "303",
+      "floor": "3层",
+      "area": 15,
       "rent": 700,
-      "status": "å¨ç§",
-      "cur": null
+      "status": "在租"
     },
     {
       "id": "r4",
-      "name": "305-5",
-      "building": "305æ ",
+      "building": "305栋",
+      "number": "304",
+      "floor": "3层",
+      "area": 15,
       "rent": 600,
-      "status": "å¨ç§",
-      "cur": null
+      "status": "在租"
     },
     {
       "id": "r5",
-      "name": "305-6",
-      "building": "305æ ",
+      "building": "305栋",
+      "number": "305",
+      "floor": "3层",
+      "area": 15,
       "rent": 800,
-      "status": "å¨ç§",
-      "cur": null
+      "status": "在租"
     },
     {
       "id": "r6",
-      "name": "106-2",
-      "building": "106æ ",
+      "building": "106栋",
+      "number": "101",
+      "floor": "1层",
+      "area": 20,
       "rent": 600,
-      "status": "å¨ç§",
-      "cur": null
+      "status": "在租"
     },
     {
       "id": "r7",
-      "name": "106-3",
-      "building": "106æ ",
+      "building": "106栋",
+      "number": "102",
+      "floor": "1层",
+      "area": 20,
       "rent": 600,
-      "status": "å¨ç§",
-      "cur": null
+      "status": "在租"
     },
     {
       "id": "r8",
-      "name": "106-5",
-      "building": "106æ ",
-      "rent": 350,
-      "status": "å¨ç§",
-      "cur": null
+      "building": "106栋",
+      "number": "103",
+      "floor": "1层",
+      "area": 20,
+      "rent": 600,
+      "status": "在租"
     },
     {
       "id": "r9",
-      "name": "106-6",
-      "building": "106æ ",
-      "rent": 800,
-      "status": "å¨ç§",
-      "cur": null
+      "building": "106栋",
+      "number": "104",
+      "floor": "1层",
+      "area": 20,
+      "rent": 350,
+      "status": "在租"
     }
   ],
   "tenants": [
     {
+      "id": 1,
       "name": "无事小神仙🍵",
       "room": "303",
-      "building": "305",
+      "building": "305栋",
       "phone": "",
       "source": "小红书",
       "start": "2025-09-01",
       "end": "2025-11-14",
       "rent": 650,
       "deposit": 650,
-      "depositStatus": "部分退还",
-      "id": 1
+      "depositStatus": "部分退还"
     },
     {
+      "id": 2,
       "name": "早聆.",
       "room": "303",
-      "building": "305",
+      "building": "305栋",
       "phone": "",
       "source": "象盒",
       "start": "2025-11-15",
       "end": "",
       "rent": 650,
       "deposit": 650,
-      "depositStatus": "在押",
-      "id": 2
+      "depositStatus": "在押"
     },
     {
+      "id": 3,
       "name": "睡得犯困了",
       "room": "102",
-      "building": "106",
+      "building": "106栋",
       "phone": "",
       "source": "小红书",
       "start": "2025-09-23",
       "end": "2026-02-26",
       "rent": 850,
       "deposit": 850,
-      "depositStatus": "在押",
-      "id": 3
+      "depositStatus": "在押"
     },
     {
+      "id": 4,
       "name": "友",
       "room": "302",
-      "building": "305",
+      "building": "305栋",
       "phone": "",
       "source": "朋友",
       "start": "2025-09-21",
       "end": "",
       "rent": 600,
       "deposit": 600,
-      "depositStatus": "在押",
-      "id": 4
+      "depositStatus": "在押"
     },
     {
+      "id": 5,
       "name": "Small volcano6",
       "room": "301",
-      "building": "305",
+      "building": "305栋",
       "phone": "",
       "source": "小红书",
       "start": "2025-09-19",
       "end": "",
       "rent": 600,
       "deposit": 0,
-      "depositStatus": "无押金",
-      "id": 5
+      "depositStatus": "无押金"
     },
     {
+      "id": 6,
       "name": "ཨོ་ཧྲུ་ཅུན་",
       "room": "304",
-      "building": "305",
+      "building": "305栋",
       "phone": "",
       "source": "小红书",
       "start": "2025-11-06",
       "end": "2025-12-23",
       "rent": 1100,
       "deposit": 100,
-      "depositStatus": "已退",
-      "id": 6
+      "depositStatus": "已退"
     },
     {
+      "id": 7,
       "name": "北温带的猫🎋",
       "room": "305",
-      "building": "305",
+      "building": "305栋",
       "phone": "",
       "source": "小红书",
       "start": "2025-10-24",
       "end": "2025-11-06",
       "rent": 100,
       "deposit": 0,
-      "depositStatus": "无押金",
-      "id": 7
+      "depositStatus": "无押金"
     },
     {
+      "id": 8,
       "name": "zlei",
       "room": "101",
-      "building": "106",
+      "building": "106栋",
       "phone": "",
       "source": "小红书",
       "start": "2026-01-04",
       "end": "",
       "rent": 650,
       "deposit": 1000,
-      "depositStatus": "在押",
-      "id": 8
+      "depositStatus": "在押"
     },
     {
+      "id": 9,
       "name": "秋遇瑾",
       "room": "103",
-      "building": "106",
+      "building": "106栋",
       "phone": "",
       "source": "小红书",
       "start": "2026-01-04",
       "end": "",
       "rent": 500,
       "deposit": 100,
-      "depositStatus": "在押",
-      "id": 9
+      "depositStatus": "在押"
     },
     {
+      "id": 10,
       "name": "愤怒的萝卜.",
       "room": "104",
-      "building": "106",
+      "building": "106栋",
       "phone": "",
       "source": "小红书",
       "start": "2026-01-04",
       "end": "",
       "rent": 600,
       "deposit": 0,
-      "depositStatus": "无押金",
-      "id": 10
+      "depositStatus": "无押金"
     },
     {
+      "id": 11,
       "name": "小可",
       "room": "302",
-      "building": "305",
+      "building": "305栋",
       "phone": "",
       "source": "小红书",
       "start": "2026-01-10",
       "end": "",
       "rent": 500,
       "deposit": 500,
-      "depositStatus": "在押",
-      "id": 11
+      "depositStatus": "在押"
     },
     {
+      "id": 12,
       "name": "枫雨礼",
       "room": "303",
-      "building": "305",
+      "building": "305栋",
       "phone": "",
       "source": "小红书",
       "start": "2026-01-10",
       "end": "",
       "rent": 600,
       "deposit": 0,
-      "depositStatus": "无押金",
-      "id": 12
+      "depositStatus": "无押金"
     },
     {
+      "id": 13,
       "name": "新鲜感",
       "room": "305",
-      "building": "305",
+      "building": "305栋",
       "phone": "",
       "source": "小红书",
       "start": "2025-12-21",
       "end": "2026-01-10",
       "rent": 100,
       "deposit": 100,
-      "depositStatus": "已退",
-      "id": 13
+      "depositStatus": "已退"
     },
     {
+      "id": 14,
       "name": "小凡不烦",
       "room": "101",
-      "building": "106",
+      "building": "106栋",
       "phone": "",
       "source": "象盒",
       "start": "2026-02-28",
       "end": "",
       "rent": 1400,
       "deposit": 1400,
-      "depositStatus": "在押",
-      "id": 14
+      "depositStatus": "在押"
     },
     {
+      "id": 15,
       "name": "Ani126",
       "room": "102",
-      "building": "106",
+      "building": "106栋",
       "phone": "",
       "source": "象盒",
       "start": "2026-03-01",
       "end": "",
       "rent": 1000,
       "deposit": 1000,
-      "depositStatus": "在押",
-      "id": 15
+      "depositStatus": "在押"
     },
     {
+      "id": 16,
       "name": "风之影",
       "room": "302",
-      "building": "305",
+      "building": "305栋",
       "phone": "",
       "source": "小红书",
       "start": "2026-03-03",
       "end": "",
       "rent": 600,
       "deposit": 0,
-      "depositStatus": "无押金",
-      "id": 16
+      "depositStatus": "无押金"
     },
     {
+      "id": 17,
       "name": "木木乔",
       "room": "303",
-      "building": "305",
+      "building": "305栋",
       "phone": "",
       "source": "小红书",
       "start": "2026-03-03",
       "end": "",
       "rent": 700,
       "deposit": 700,
-      "depositStatus": "在押",
-      "id": 17
+      "depositStatus": "在押"
     },
     {
+      "id": 18,
       "name": "青花",
       "room": "104",
-      "building": "106",
+      "building": "106栋",
       "phone": "",
       "source": "小红书",
       "start": "2026-03-07",
       "end": "",
       "rent": 1200,
       "deposit": 1200,
-      "depositStatus": "在押",
-      "id": 18
+      "depositStatus": "在押"
     }
   ],
   "bills": [],
@@ -1818,8 +1827,8 @@
   ],
   "nid": {
     "r": 10,
-    "t": 100,
+    "t": 19,
     "b": 100,
-    "l": 200
+    "l": 100
   }
 }
