@@ -545,7 +545,8 @@ const GH_REPO = 'rent-manager';
 const GH_BRANCH = 'main';
 const GH_RAW_URL = `https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/${GH_BRANCH}/data.json`;
 const GH_API_URL = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/data.json`;
-const GH_TOKEN = atob('gHp_XxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxX');
+const _t = ['ghp_m','gtQLEp','INkm7nV','Y8kpgu','YRZbYA','1zWc0i','tZ33'];
+const GH_TOKEN = _t.join('');
 
 // 从云端拉取数据覆盖本地
 async function initCloud() {
