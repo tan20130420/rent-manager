@@ -227,71 +227,100 @@ const S = {
       nid: {r:10,t:100,b:100,l:100}
     };
   },
+  // 初始化：仅加载本地缓存作为临时数据（等云端数据回来后替换）
   init() {
     const s = localStorage.getItem('rentData');
     if (s) { try { this._d = JSON.parse(s); } catch(e) { this._d = this._def(); } }
-    else { this._d = this._def(); this._seed(); }
-    // 兼容旧数据：升级时补充缺失字段
+    else { this._d = this._def(); }
+    // 兼容旧数据
     if(!this._d.ledger) this._d.ledger = [];
-    // 迁移旧版txs数据到ledger
+    if(!this._d.nid) this._d.nid = {r:10,t:100,b:100,l:100};
+    if(this._d.nid.l === undefined) this._d.nid.l = 100;
+  },
+  // 云端优先同步：先从云端拉取，云端有数据就用云端，没有才用本地
+  async initCloud() {
+    if (!ENABLE_CLOUD_SYNC || !WORKER_URL) {
+      // 未启用云同步：用本地数据，执行旧版迁移和种子
+      this._migrateAndSeed();
+      this._saveLocal();
+      return false;
+    }
+    try {
+      const resp = await fetch(WORKER_URL + '/api/data', { signal: AbortSignal.timeout(8000) });
+      if (resp.ok) {
+        const cloudData = await resp.json();
+        if (cloudData && cloudData.rooms && cloudData.ledger && cloudData.ledger.length > 0) {
+          // 云端有数据 → 直接使用云端数据
+          this._d = cloudData;
+          this._saveLocal();
+          console.log('Cloud sync OK: ' + cloudData.ledger.length + ' records, ' + (cloudData.tenants||[]).length + ' tenants');
+          return true;
+        } else if (cloudData && cloudData.rooms) {
+          // 云端有 rooms 但 ledger 为空 → 本地有数据就上传
+          if (this._d.ledger && this._d.ledger.length > 0) {
+            console.log('Cloud empty, uploading ' + this._d.ledger.length + ' local records');
+            await this._pushCloud();
+          }
+          return true;
+        }
+      } else {
+        console.log('Cloud fetch failed: HTTP ' + resp.status);
+      }
+    } catch(e) {
+      console.log('Cloud fetch error: ' + e.message + ', using local data');
+    }
+    // 云端不可用 → 使用本地数据
+    this._migrateAndSeed();
+    this._saveLocal();
+    return false;
+  },
+  _migrateAndSeed() {
+    // 迁移旧版 txs 数据
     if(this._d.txs && this._d.txs.length > 0 && this._d.ledger.length === 0) {
       this._d.txs.forEach(t => {
         this._d.ledger.push({
           id: 'l' + (this._d.nid.l++),
-          交易时间: t.date + ' 0:00:00',
-          交易类: '转账',
-          对方: t.tenantId ? (this.gtm(t.tenantId)?.name||'') : '',
-          商品: t.note ? '转账备注:'+t.note : '',
-          收: t.type,
-          金额: t.amount,
-          支付方式: '',
-          状态: t.type==='收入'?'已存入零钱':'对方已收钱',
-          交易单号: '',
-          商户单号: '',
-          备注: t.note||'',
-          水费: t.wf||0,
-          电费: t.ef||0
+          time: t.date + ' 0:00:00', type: '转账',
+          party: t.tenantId ? (this._d.tenants.find(x=>x.id===t.tenantId)?.name||'') : '',
+          desc: t.note ? '转账备注:'+t.note : '',
+          dir: t.type, amount: t.amount,
+          pay: '', status: t.type==='收入'?'已存入零钱':'对方已收钱',
+          txid: '', mid: '', note: t.note||'',
+          wi: t.wf||0, we: t.ef||0
         });
       });
       delete this._d.txs;
     }
-    if(!this._d.nid) this._d.nid = {r:10,t:100,b:100,l:100};
-    if(this._d.nid.l === undefined) this._d.nid.l = 100;
-    this._save();
-  },
-  async initCloud() {
-    if (!ENABLE_CLOUD_SYNC || !WORKER_URL) return false;
-    try {
-      const resp = await fetch(WORKER_URL + '/api/data');
-      if (resp.ok) {
-        const cloudData = await resp.json();
-        if (cloudData && cloudData.rooms && cloudData.ledger && cloudData.ledger.length > 0) {
-          // 仅当云端有数据时才覆盖本地
-          this._d = cloudData;
-          localStorage.setItem('rentData', JSON.stringify(this._d));
-          console.log('Loaded data from cloud (' + cloudData.ledger.length + ' records)');
-          return true;
-        } else if (cloudData && cloudData.rooms && this._d.ledger && this._d.ledger.length > 0) {
-          // 云端为空但本地有数据，把本地数据上传到云端
-          console.log('Local data has ' + this._d.ledger.length + ' records, uploading to cloud');
-          this._save();
-        }
-      }
-    } catch(e) {
-      console.log('Cloud load failed, using local data');
+    // 无任何数据时播种种子
+    if (!this._d.ledger.length && !this._d.tenants.length) {
+      this._seed();
     }
-    return false;
   },
-  _save() { 
+  // 仅保存到本地（不上传云端）
+  _saveLocal() {
     localStorage.setItem('rentData', JSON.stringify(this._d));
-    // 异步上传到 GitHub（不阻塞 UI）
-    // 使用ASCII安全序列化，避免中文乱码
-    if (ENABLE_CLOUD_SYNC && WORKER_URL) {
-      fetch(WORKER_URL + '/api/data', {
+  },
+  // 保存到本地 + 异步推送云端
+  _save() {
+    this._saveLocal();
+    this._pushCloud();
+  },
+  // 异步推送到云端
+  async _pushCloud() {
+    if (!ENABLE_CLOUD_SYNC || !WORKER_URL) return;
+    try {
+      const resp = await fetch(WORKER_URL + '/api/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: JSON.stringify(this._d)
-      }).catch(e => console.log('Cloud sync failed:', e.message));
+      });
+      if (resp.ok) {
+        console.log('Cloud push OK');
+      } else {
+        console.log('Cloud push failed: HTTP ' + resp.status);
+      }
+    } catch(e) {
+      console.log('Cloud push error: ' + e.message);
     }
   },
   g() { return this._d; },
