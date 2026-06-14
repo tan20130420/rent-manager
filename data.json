@@ -1,1 +1,338 @@
-{"rooms": [], "tenants": [], "bills": [], "ledger": [], "nid": {"r": 10, "t": 100, "b": 100, "l": 100}}
+{
+  "rooms": [
+    {
+      "id": "r1",
+      "name": "305-1",
+      "building": "305栋",
+      "rent": 500,
+      "status": "在租",
+      "cur": "t6"
+    },
+    {
+      "id": "r2",
+      "name": "305-2",
+      "building": "305栋",
+      "rent": 700,
+      "status": "在租",
+      "cur": "t7"
+    },
+    {
+      "id": "r3",
+      "name": "305-3",
+      "building": "305栋",
+      "rent": 700,
+      "status": "在租",
+      "cur": "t2"
+    },
+    {
+      "id": "r4",
+      "name": "305-5",
+      "building": "305栋",
+      "rent": 600,
+      "status": "在租",
+      "cur": "t20"
+    },
+    {
+      "id": "r5",
+      "name": "305-6",
+      "building": "305栋",
+      "rent": 800,
+      "status": "在租",
+      "cur": "t3"
+    },
+    {
+      "id": "r6",
+      "name": "106-2",
+      "building": "106栋",
+      "rent": 600,
+      "status": "在租",
+      "cur": "t21"
+    },
+    {
+      "id": "r7",
+      "name": "106-3",
+      "building": "106栋",
+      "rent": 600,
+      "status": "在租",
+      "cur": "t5"
+    },
+    {
+      "id": "r8",
+      "name": "106-5",
+      "building": "106栋",
+      "rent": 350,
+      "status": "在租",
+      "cur": "t8"
+    },
+    {
+      "id": "r9",
+      "name": "106-6",
+      "building": "106栋",
+      "rent": 800,
+      "status": "在租",
+      "cur": "t12"
+    }
+  ],
+  "tenants": [
+    {
+      "id": "t1",
+      "name": "睡得犯困了",
+      "phone": "",
+      "source": "小红书",
+      "roomId": "r3",
+      "startDate": "2025-10-05",
+      "endDate": "2026-01-14",
+      "deposit": 850,
+      "depositReturned": true,
+      "notes": ""
+    },
+    {
+      "id": "t2",
+      "name": "木木乔",
+      "phone": "",
+      "source": "小红书",
+      "roomId": "r3",
+      "startDate": "2026-03-03",
+      "endDate": "2026-06-30",
+      "deposit": 700,
+      "depositReturned": false,
+      "notes": ""
+    },
+    {
+      "id": "t3",
+      "name": "睡得犯困了",
+      "phone": "",
+      "source": "续住",
+      "roomId": "r5",
+      "startDate": "2026-02-28",
+      "endDate": "2026-07-14",
+      "deposit": 800,
+      "depositReturned": false,
+      "notes": ""
+    },
+    {
+      "id": "t4",
+      "name": "友",
+      "phone": "",
+      "source": "中介-向前",
+      "roomId": "r5",
+      "startDate": "2025-09-26",
+      "endDate": "2026-01-25",
+      "deposit": 800,
+      "depositReturned": true,
+      "notes": ""
+    },
+    {
+      "id": "t5",
+      "name": ".三提腊扣.",
+      "phone": "",
+      "source": "中介-向前",
+      "roomId": "r7",
+      "startDate": "2026-03-10",
+      "endDate": "2026-07-10",
+      "deposit": 600,
+      "depositReturned": false,
+      "notes": ""
+    },
+    {
+      "id": "t6",
+      "name": "小可",
+      "phone": "",
+      "source": "中介-向前",
+      "roomId": "r1",
+      "startDate": "2026-01-17",
+      "endDate": "2026-07-17",
+      "deposit": 500,
+      "depositReturned": false,
+      "notes": ""
+    },
+    {
+      "id": "t7",
+      "name": "青花",
+      "phone": "",
+      "source": "QQ群",
+      "roomId": "r2",
+      "startDate": "2026-03-30",
+      "endDate": "2026-07-14",
+      "deposit": 700,
+      "depositReturned": false,
+      "notes": ""
+    },
+    {
+      "id": "t8",
+      "name": "小凡不烦",
+      "phone": "",
+      "source": "QQ群",
+      "roomId": "r8",
+      "startDate": "2026-03-05",
+      "endDate": "2026-07-04",
+      "deposit": 350,
+      "depositReturned": false,
+      "notes": ""
+    },
+    {
+      "id": "t9",
+      "name": "zlei",
+      "phone": "",
+      "source": "小红书",
+      "roomId": "r9",
+      "startDate": "2025-12-08",
+      "endDate": "2026-03-30",
+      "deposit": 700,
+      "depositReturned": true,
+      "notes": ""
+    },
+    {
+      "id": "t10",
+      "name": "早聆.",
+      "phone": "",
+      "source": "中介-向前",
+      "roomId": "r4",
+      "startDate": "2025-09-15",
+      "endDate": "2025-12-14",
+      "deposit": 700,
+      "depositReturned": true,
+      "notes": ""
+    },
+    {
+      "id": "t11",
+      "name": "Ani126",
+      "phone": "",
+      "source": "中介-向前",
+      "roomId": "r4",
+      "startDate": "2026-03-01",
+      "endDate": "2026-07-01",
+      "deposit": 600,
+      "depositReturned": false,
+      "notes": ""
+    },
+    {
+      "id": "t12",
+      "name": "浩浩.",
+      "phone": "",
+      "source": "QQ群",
+      "roomId": "r9",
+      "startDate": "2026-05-10",
+      "endDate": "2026-07-10",
+      "deposit": 800,
+      "depositReturned": false,
+      "notes": ""
+    },
+    {
+      "id": "t13",
+      "name": "无事小神仙",
+      "phone": "",
+      "source": "中介-向前",
+      "roomId": "r1",
+      "startDate": "2025-09-12",
+      "endDate": "2025-11-22",
+      "deposit": 500,
+      "depositReturned": true,
+      "notes": ""
+    },
+    {
+      "id": "t14",
+      "name": "Small volcano6",
+      "phone": "",
+      "source": "中介-向前",
+      "roomId": "r2",
+      "startDate": "2025-09-20",
+      "endDate": "2026-01-20",
+      "deposit": 800,
+      "depositReturned": true,
+      "notes": ""
+    },
+    {
+      "id": "t15",
+      "name": "七斗星晋老师",
+      "phone": "",
+      "source": "推荐",
+      "roomId": "r9",
+      "startDate": "2026-04-10",
+      "endDate": "2026-05-10",
+      "deposit": 100,
+      "depositReturned": true,
+      "notes": ""
+    },
+    {
+      "id": "t16",
+      "name": "风之影",
+      "phone": "",
+      "source": "推荐",
+      "roomId": "r6",
+      "startDate": "2026-03-03",
+      "endDate": "2026-03-21",
+      "deposit": 100,
+      "depositReturned": true,
+      "notes": ""
+    },
+    {
+      "id": "t17",
+      "name": "枫雨礼",
+      "phone": "",
+      "source": "QQ群",
+      "roomId": "r6",
+      "startDate": "2026-01-10",
+      "endDate": "2026-01-25",
+      "deposit": 100,
+      "depositReturned": true,
+      "notes": ""
+    },
+    {
+      "id": "t18",
+      "name": "愤怒的萝卜.",
+      "phone": "",
+      "source": "QQ群",
+      "roomId": "r3",
+      "startDate": "2026-01-14",
+      "endDate": "2026-02-13",
+      "deposit": 100,
+      "depositReturned": true,
+      "notes": ""
+    },
+    {
+      "id": "t19",
+      "name": "秋遇瑾",
+      "phone": "",
+      "source": "QQ群",
+      "roomId": "r4",
+      "startDate": "2026-01-16",
+      "endDate": "2026-02-16",
+      "deposit": 100,
+      "depositReturned": true,
+      "notes": ""
+    },
+    {
+      "id": "t20",
+      "name": "岛巷落灯",
+      "phone": "",
+      "source": "推荐",
+      "roomId": "r4",
+      "startDate": "2026-07-01",
+      "endDate": "2027-06-30",
+      "deposit": 200,
+      "depositReturned": false,
+      "notes": ""
+    },
+    {
+      "id": "t21",
+      "name": "旺旺掀被",
+      "phone": "",
+      "source": "QQ群",
+      "roomId": "r6",
+      "startDate": "2026-04-05",
+      "endDate": "2026-07-14",
+      "deposit": 600,
+      "depositReturned": false,
+      "notes": ""
+    }
+  ],
+  "bills": [],
+  "ledger": [],
+  "nid": {
+    "r": 10,
+    "t": 100,
+    "b": 100,
+    "l": 100
+  }
+}
