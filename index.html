@@ -670,20 +670,22 @@ function doi() {
 
 // ===== UTILITIES =====
 function ru(m) {
-  const s = S.sum();
   const bills = S.gb();
   const tx = S.gtx();
   
+  // 收入：从收支记录中汇总水费/电费
   const water_income = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.水费||0),0);
   const elec_income = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.电费||0),0);
   
   // 按楼栋分配
   const detail = {};
+  // 支出：从抄表记录汇总
   bills.forEach(b => {
     const k = b.building+'-'+b.type;
     if(!detail[k]) detail[k]={income:0,expense:0};
     detail[k].expense += b.amount;
   });
+  // 收入：按楼栋分配
   tx.filter(t=>t.收==='收入'&&(t.水费||t.电费)).forEach(t => {
     const tenant = S.gt().find(x => x.name === t.对方);
     const room = tenant ? S.grm(tenant.roomId) : null;
@@ -700,6 +702,10 @@ function ru(m) {
     }
   });
   
+  // 顶部卡片：支出和毛利也从抄表记录计算
+  const total_expense = bills.reduce((s,b)=>s+b.amount,0);
+  const total_profit = water_income + elec_income - total_expense;
+  
   const buildings = ['305栋','106栋'];
   const types = ['电费','水费'];
   
@@ -708,8 +714,8 @@ function ru(m) {
     <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));">
       <div class="sc"><div class="l">水费收入</div><div class="v">${fm(water_income)}</div></div>
       <div class="sc"><div class="l">电费收入</div><div class="v">${fm(elec_income)}</div></div>
-      <div class="sc red"><div class="l">水电费支出</div><div class="v">${fm(s.ue)}</div></div>
-      <div class="sc green"><div class="l">水电费毛利</div><div class="v">${fm(s.up)}</div></div>
+      <div class="sc red"><div class="l">水电费支出</div><div class="v">${fm(total_expense)}</div></div>
+      <div class="sc green"><div class="l">水电费毛利</div><div class="v">${fm(total_profit)}</div></div>
     </div>
     ${buildings.map(b => `
       <h3 style="margin:16px 0 8px">${b}</h3>
