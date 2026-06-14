@@ -265,11 +265,16 @@ const S = {
       const resp = await fetch(WORKER_URL + '/api/data');
       if (resp.ok) {
         const cloudData = await resp.json();
-        if (cloudData && cloudData.rooms) {
+        if (cloudData && cloudData.rooms && cloudData.ledger && cloudData.ledger.length > 0) {
+          // 仅当云端有数据时才覆盖本地
           this._d = cloudData;
           localStorage.setItem('rentData', JSON.stringify(this._d));
-          console.log('Loaded data from cloud');
+          console.log('Loaded data from cloud (' + cloudData.ledger.length + ' records)');
           return true;
+        } else if (cloudData && cloudData.rooms && this._d.ledger && this._d.ledger.length > 0) {
+          // 云端为空但本地有数据，把本地数据上传到云端
+          console.log('Local data has ' + this._d.ledger.length + ' records, uploading to cloud');
+          this._save();
         }
       }
     } catch(e) {
@@ -416,8 +421,400 @@ function cm() { $('mo').classList.remove('show'); }
 
 function r(p) {
   const m = $('main');
-  S.g();
-  m.innerHTML = '<div class="es"><div class="ic">🔧</div><h4>功能开发中</h4></div>';
+  const d = S.g();
+  const s = S.sum();
+  switch(p) {
+    case 'dashboard': rd(m,d,s); break;
+    case 'tenants': rt(m,d); break;
+    case 'rooms': rr(m,d); break;
+    case 'ledger': rl(m,d); break;
+    case 'ledger-full': rlf(m,d); break;
+    case 'utilities': ru(m); break;
+    case 'deposits': rdp(m,d); break;
+    case 'reports': rrp(m,d,s); break;
+    case 'backup': rbk(m,d); break;
+    default: m.innerHTML = '<div class="es"><div class="ic">🔧</div><h4>功能开发中</h4></div>';
+  }
+}
+
+// ===== DASHBOARD =====
+function rd(m,d,s) {
+  const now = new Date().toISOString().slice(0,10);
+  const month = now.substring(0,7);
+  const mi = d.ledger.filter(x=>x.收==='收入'&&(x.交易时间||'').startsWith(month)).reduce((a,x)=>a+(x.金额||0),0);
+  const me = d.ledger.filter(x=>x.收==='支出'&&(x.交易时间||'').startsWith(month)).reduce((a,x)=>a+(x.金额||0),0);
+  m.innerHTML = `
+    <div class="ph"><h2>仪表盘</h2><span class="dt">${now}</span></div>
+    <div class="grid">
+      <div class="sc"><div class="l">本月收入</div><div class="v ts">${fm(mi)}</div></div>
+      <div class="sc red"><div class="l">本月支出</div><div class="v">${fm(me)}</div></div>
+      <div class="sc green"><div class="l">本月结余</div><div class="v">${fm(mi-me)}</div></div>
+      <div class="sc"><div class="l">总收入</div><div class="v ts">${fm(s.ti)}</div></div>
+      <div class="sc red"><div class="l">总支出</div><div class="v">${fm(s.te)}</div></div>
+      <div class="sc green"><div class="l">净利润</div><div class="v">${fm(s.ni)}</div></div>
+    </div>
+    <div class="grid">
+      <div class="sc"><div class="l">在租房间</div><div class="v">${s.ar}/${s.tr}</div><div class="c">出租率 ${s.vr}%</div></div>
+      <div class="sc"><div class="l">在租租户</div><div class="v">${s.at}</div></div>
+      <div class="sc"><div class="l">押金总额</div><div class="v">${fm(s.dep)}</div><div class="c">未退 ${fm(s.ud)}</div></div>
+      <div class="sc"><div class="l">水费收入</div><div class="v ts">${fm(s.wi_water)}</div></div>
+      <div class="sc"><div class="l">电费收入</div><div class="v ts">${fm(s.wi_elec)}</div></div>
+      <div class="sc red"><div class="l">水电费支出</div><div class="v">${fm(s.ue)}</div></div>
+    </div>
+    <div class="gc"><div class="gb"><canvas id="c1"></canvas></div><div class="gb"><canvas id="c2"></canvas></div></div>
+  `;
+  setTimeout(() => {
+    const c1=$('c1'); if(c1){if(charts.c1)charts.c1.destroy();charts.c1=new Chart(c1,{type:'doughnut',data:{labels:['收入','支出'],datasets:[{data:[s.ti,s.te],backgroundColor:['#1a73e8','#d93025'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:ctx=>ctx.label+': '+fm(ctx.raw)}}}}});}
+    const c2=$('c2'); if(c2){if(charts.c2)charts.c2.destroy();charts.c2=new Chart(c2,{type:'doughnut',data:{labels:['水费收入','电费收入','水电费支出'],datasets:[{data:[s.wi_water,s.wi_elec,s.ue],backgroundColor:['#1a73e8','#0f9d58','#d93025'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:ctx=>ctx.label+': '+fm(ctx.raw)}}}}});}
+  }, 100);
+}
+
+// ===== TENANTS =====
+function rt(m,d) {
+  const now = new Date().toISOString().slice(0,10);
+  m.innerHTML = `
+    <div class="ph"><h2>租户管理</h2><button class="btn" onclick="oat()">+ 添加租户</button></div>
+    <table><thead><tr><th>姓名</th><th>房间</th><th>手机</th><th>来源</th><th>入住</th><th>到期</th><th>押金</th><th>状态</th><th>操作</th></tr></thead><tbody>
+    ${d.tenants.map(t => {
+      const r = S.grm(t.roomId);
+      const expired = t.endDate && t.endDate < now;
+      return `<tr class="${expired?'ex':''}"><td>${t.name}</td><td>${r?r.name:'-'}</td><td>${t.phone||'-'}</td><td>${t.source||'-'}</td><td>${fd(t.startDate)}</td><td>${fd(t.endDate)}</td><td>${fm(t.deposit)}</td><td>${t.depositReturned?'<span class="tg">已退</span>':expired?'<span class="tr">已到期</span>':'<span class="tg">在租</span>'}</td><td><button class="btn sm" onclick="ot('${t.id}')">编辑</button>${!t.depositReturned&&t.endDate?` <button class="btn sm dr" onclick="if(confirm('确认退租？')){S.et('${t.id}','${now}');r('tenants');}">退租</button>`:''}</td></tr>`;
+    }).join('')}
+    </tbody></table>
+  `;
+}
+function oat() {
+  const rooms = S.gr().filter(r => r.status === '空置' || !r.status);
+  om(`
+    <h3>添加租户</h3>
+    <div class="ff">
+      <label>姓名 <input id="f_tn" placeholder="租户姓名"></label>
+      <label>手机 <input id="f_tp" placeholder="手机号"></label>
+      <label>来源 <input id="f_ts" placeholder="来源（如小红书、QQ群）"></label>
+      <label>房间 <select id="f_tr">${rooms.map(r=>'<option value="'+r.id+'">'+r.name+'</option>').join('')}</select></label>
+      <label>入住日期 <input id="f_tsd" type="date" value="${new Date().toISOString().slice(0,10)}"></label>
+      <label>到期日期 <input id="f_ted" type="date"></label>
+      <label>押金 <input id="f_tdep" type="number" placeholder="押金金额"></label>
+      <label>备注 <input id="f_tn2" placeholder="备注"></label>
+      <button class="btn" onclick="sbt()">保存</button>
+      <button class="btn scd" onclick="cm()">取消</button>
+    </div>
+  `);
+}
+function sbt() {
+  const tn = $('f_tn'), tp = $('f_tp'), ts = $('f_ts'), tr = $('f_tr'), tsd = $('f_tsd'), ted = $('f_ted'), tdep = $('f_tdep'), tn2 = $('f_tn2');
+  if(!tn.value.trim()) return st('请输入姓名','e');
+  S.at({name:tn.value.trim(),phone:tp.value.trim(),source:ts.value.trim(),roomId:tr.value,startDate:tsd.value,endDate:ted.value||null,deposit:parseFloat(tdep.value)||0,depositReturned:false,notes:tn2.value.trim()});
+  cm(); r('tenants'); st('租户添加成功');
+}
+function ot(id) {
+  const t = S.gtm(id);
+  const rooms = S.gr();
+  om(`
+    <h3>编辑租户</h3>
+    <div class="ff">
+      <label>姓名 <input id="f_tn" value="${t.name}"></label>
+      <label>手机 <input id="f_tp" value="${t.phone||''}"></label>
+      <label>来源 <input id="f_ts" value="${t.source||''}"></label>
+      <label>房间 <select id="f_tr">${rooms.map(r=>'<option value="'+r.id+'"'+(r.id===t.roomId?' selected':'')+'>'+r.name+'</option>').join('')}</select></label>
+      <label>入住日期 <input id="f_tsd" type="date" value="${t.startDate||''}"></label>
+      <label>到期日期 <input id="f_ted" type="date" value="${t.endDate||''}"></label>
+      <label>押金 <input id="f_tdep" type="number" value="${t.deposit}"></label>
+      <label>备注 <input id="f_tn2" value="${t.notes||''}"></label>
+      <button class="btn" onclick="sbt2('${id}')">保存</button>
+      <button class="btn scd" onclick="cm()">取消</button>
+    </div>
+  `);
+}
+function sbt2(id) {
+  S.ut(id,{name:$('f_tn').value.trim(),phone:$('f_tp').value.trim(),source:$('f_ts').value.trim(),roomId:$('f_tr').value,startDate:$('f_tsd').value,endDate:$('f_ted').value||null,deposit:parseFloat($('f_tdep').value)||0,notes:$('f_tn2').value.trim()});
+  cm(); r('tenants'); st('租户已更新');
+}
+
+// ===== ROOMS =====
+function rr(m,d) {
+  m.innerHTML = `
+    <div class="ph"><h2>房间管理</h2><button class="btn" onclick="oar()">+ 添加房间</button></div>
+    <table><thead><tr><th>房间</th><th>楼栋</th><th>租金</th><th>状态</th><th>当前租户</th><th>操作</th></tr></thead><tbody>
+    ${d.rooms.map(r => {
+      const t = r.cur ? S.gtm(r.cur) : null;
+      return `<tr><td>${r.name}</td><td>${r.building}</td><td>${fm(r.rent)}</td><td>${r.status==='在租'?'<span class="tg">在租</span>':'<span class="tr">空置</span>'}</td><td>${t?t.name:'-'}</td><td><button class="btn sm" onclick="oer('${r.id}')">编辑</button></td></tr>`;
+    }).join('')}
+    </tbody></table>
+  `;
+}
+function oar() {
+  om(`<h3>添加房间</h3><div class="ff"><label>房间名 <input id="f_rn" placeholder="如 305-1"></label><label>楼栋 <select id="f_rb"><option value="305栋">305栋</option><option value="106栋">106栋</option></select></label><label>租金 <input id="f_rr" type="number" placeholder="月租金"></label><button class="btn" onclick="sbr()">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sbr() {
+  const n=$('f_rn'),b=$('f_rb'),r=$('f_rr');
+  if(!n.value.trim()||!r.value) return st('请填写完整','e');
+  S.ar({name:n.value.trim(),building:b.value,rent:parseFloat(r.value),status:'空置',cur:null});
+  cm(); r('rooms'); st('房间添加成功');
+}
+function oer(id) {
+  const rm = S.grm(id);
+  om(`<h3>编辑房间</h3><div class="ff"><label>房间名 <input id="f_rn" value="${rm.name}"></label><label>楼栋 <select id="f_rb"><option value="305栋"${rm.building==='305栋'?' selected':''}>305栋</option><option value="106栋"${rm.building==='106栋'?' selected':''}>106栋</option></select></label><label>租金 <input id="f_rr" type="number" value="${rm.rent}"></label><button class="btn" onclick="sbr2('${id}')">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sbr2(id) {
+  S.ur(id,{name:$('f_rn').value.trim(),building:$('f_rb').value,rent:parseFloat($('f_rr').value)||0});
+  cm(); r('rooms'); st('房间已更新');
+}
+
+// ===== LEDGER (收支流水) =====
+function rl(m,d) {
+  const tx = d.ledger.filter(x=>x.收==='收入').sort((a,b)=>(b.交易时间||'')>(a.交易时间||'')?1:-1);
+  m.innerHTML = `
+    <div class="ph"><h2>收支流水</h2><button class="btn" onclick="oatx()">+ 添加收入</button></div>
+    <table><thead><tr><th>时间</th><th>对方</th><th>金额</th><th>水费</th><th>电费</th><th>备注</th><th>操作</th></tr></thead><tbody>
+    ${tx.map(t => `<tr><td>${(t.交易时间||'').substring(0,10)}</td><td>${t.对方||''}</td><td class="ts">${fm(t.金额)}</td><td>${t.水费?fm(t.水费):'-'}</td><td>${t.电费?fm(t.电费):'-'}</td><td>${t.备注||''}</td><td><button class="btn sm" onclick="oetx('${t.id}')">编辑</button></td></tr>`).join('')}
+    </tbody></table>
+  `;
+}
+function oatx() {
+  om(`<h3>添加收入</h3><div class="ff"><label>时间 <input id="f_lt" type="datetime-local"></label><label>对方 <input id="f_lp" placeholder="租户名"></label><label>金额 <input id="f_la" type="number" placeholder="收入金额"></label><label>水费 <input id="f_lw" type="number" placeholder="水费"></label><label>电费 <input id="f_le" type="number" placeholder="电费"></label><label>备注 <input id="f_ln" placeholder="备注"></label><button class="btn" onclick="sbtx()">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sbtx() {
+  const t=$('f_lt'),p=$('f_lp'),a=$('f_la'),w=$('f_lw'),e=$('f_le'),n=$('f_ln');
+  if(!a.value) return st('请输入金额','e');
+  S.atx({交易时间:(t.value||new Date().toISOString().slice(0,16))+':00',交易类:'转账',对方:p.value.trim(),商品:'',收:'收入',金额:parseFloat(a.value),支付方式:'',状态:'已存入零钱',交易单号:'',商户单号:'',备注:n.value.trim(),水费:parseFloat(w.value)||0,电费:parseFloat(e.value)||0});
+  cm(); r('ledger'); st('收入添加成功');
+}
+function oetx(id) {
+  const t = S.gtx().find(x=>x.id===id);
+  if(!t) return;
+  om(`<h3>编辑收入</h3><div class="ff"><label>时间 <input id="f_lt" type="datetime-local" value="${(t.交易时间||'').substring(0,16)}"></label><label>对方 <input id="f_lp" value="${t.对方||''}"></label><label>金额 <input id="f_la" type="number" value="${t.金额}"></label><label>水费 <input id="f_lw" type="number" value="${t.水费||0}"></label><label>电费 <input id="f_le" type="number" value="${t.电费||0}"></label><label>备注 <input id="f_ln" value="${t.备注||''}"></label><button class="btn" onclick="sbtx2('${id}')">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sbtx2(id) {
+  S.ul(id,{交易时间:($('f_lt').value||new Date().toISOString().slice(0,16))+':00',对方:$('f_lp').value.trim(),金额:parseFloat($('f_la').value)||0,水费:parseFloat($('f_lw').value)||0,电费:parseFloat($('f_le').value)||0,备注:$('f_ln').value.trim()});
+  cm(); r('ledger'); st('已更新');
+}
+
+// ===== LEDGER FULL (流水台账) =====
+function rlf(m,d) {
+  const tx = [...d.ledger].sort((a,b)=>(b.交易时间||'')>(a.交易时间||'')?1:-1);
+  m.innerHTML = `
+    <div class="ph"><h2>流水台账</h2><button class="btn" onclick="oalf()">+ 添加记录</button><button class="btn scd" onclick="ilg()" style="margin-left:8px">📋 粘贴导入</button></div>
+    <div class="tbw"><table><thead><tr><th>时间</th><th>类型</th><th>对方</th><th>商品</th><th>收/支</th><th>金额</th><th>支付方式</th><th>状态</th><th>水费</th><th>电费</th><th>备注</th><th>操作</th></tr></thead><tbody>
+    ${tx.map(t => `<tr class="${t.收==='支出'?'ex':''}"><td>${(t.交易时间||'').substring(0,10)}</td><td>${t.交易类||''}</td><td>${t.对方||''}</td><td>${t.商品||''}</td><td>${t.收}</td><td class="${t.收==='收入'?'ts':'tr2'}">${fm(t.金额)}</td><td>${t.支付方式||''}</td><td>${t.状态||''}</td><td>${t.水费?fm(t.水费):'-'}</td><td>${t.电费?fm(t.电费):'-'}</td><td>${t.备注||''}</td><td><button class="btn sm" onclick="oelf('${t.id}')">编辑</button> <button class="btn sm dr" onclick="if(confirm('确认删除？')){S.dl('${t.id}');r('ledger-full');}">删除</button></td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="st">共 ${tx.length} 笔记录 · <a href="#" onclick="ilg();return false">从微信/Excel 直接粘贴</a></div>
+  `;
+}
+function oalf() {
+  om(`<h3>添加台账记录</h3><div class="ff"><label>时间 <input id="f_lft" type="datetime-local"></label><label>类型 <input id="f_lftype" value="转账"></label><label>对方 <input id="f_lfp" placeholder="对方"></label><label>商品 <input id="f_lfg" placeholder="商品说明"></label><label>收/支 <select id="f_lfio"><option value="收入">收入</option><option value="支出">支出</option></select></label><label>金额 <input id="f_lfa" type="number" placeholder="金额"></label><label>支付方式 <input id="f_lfpm" placeholder="支付方式"></label><label>状态 <input id="f_lfst" placeholder="状态"></label><label>水费 <input id="f_lfw" type="number" placeholder="水费"></label><label>电费 <input id="f_lfe" type="number" placeholder="电费"></label><label>备注 <input id="f_lfn" placeholder="备注"></label><button class="btn" onclick="sblf()">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sblf() {
+  S.al({交易时间:($('f_lft').value||new Date().toISOString().slice(0,16))+':00',交易类:$('f_lftype').value.trim(),对方:$('f_lfp').value.trim(),商品:$('f_lfg').value.trim(),收:$('f_lfio').value,金额:parseFloat($('f_lfa').value)||0,支付方式:$('f_lfpm').value.trim(),状态:$('f_lfst').value.trim(),交易单号:'',商户单号:'',备注:$('f_lfn').value.trim(),水费:parseFloat($('f_lfw').value)||0,电费:parseFloat($('f_lfe').value)||0});
+  cm(); r('ledger-full'); st('记录添加成功');
+}
+function oelf(id) {
+  const t = S.gl().find(x=>x.id===id);
+  if(!t) return;
+  om(`<h3>编辑台账记录</h3><div class="ff"><label>时间 <input id="f_lft" type="datetime-local" value="${(t.交易时间||'').substring(0,16)}"></label><label>类型 <input id="f_lftype" value="${t.交易类||''}"></label><label>对方 <input id="f_lfp" value="${t.对方||''}"></label><label>商品 <input id="f_lfg" value="${t.商品||''}"></label><label>收/支 <select id="f_lfio"><option value="收入"${t.收==='收入'?' selected':''}>收入</option><option value="支出"${t.收==='支出'?' selected':''}>支出</option></select></label><label>金额 <input id="f_lfa" type="number" value="${t.金额}"></label><label>支付方式 <input id="f_lfpm" value="${t.支付方式||''}"></label><label>状态 <input id="f_lfst" value="${t.状态||''}"></label><label>水费 <input id="f_lfw" type="number" value="${t.水费||0}"></label><label>电费 <input id="f_lfe" type="number" value="${t.电费||0}"></label><label>备注 <input id="f_lfn" value="${t.备注||''}"></label><button class="btn" onclick="sblf2('${id}')">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sblf2(id) {
+  S.ul(id,{交易时间:($('f_lft').value||new Date().toISOString().slice(0,16))+':00',交易类:$('f_lftype').value.trim(),对方:$('f_lfp').value.trim(),商品:$('f_lfg').value.trim(),收:$('f_lfio').value,金额:parseFloat($('f_lfa').value)||0,支付方式:$('f_lfpm').value.trim(),状态:$('f_lfst').value.trim(),备注:$('f_lfn').value.trim(),水费:parseFloat($('f_lfw').value)||0,电费:parseFloat($('f_lfe').value)||0});
+  cm(); r('ledger-full'); st('已更新');
+}
+function ilg() {
+  om(`<h3>从微信/Excel 粘贴导入</h3><p style="color:var(--text2);margin-bottom:12px;font-size:13px">从微信账单或Excel复制数据行，直接粘贴到下方文本框</p><textarea id="f_imp" style="width:100%;height:200px;padding:8px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:monospace" placeholder="粘贴数据..."></textarea><div style="margin-top:8px;display:flex;gap:8px"><button class="btn" onclick="doi()">导入</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function doi() {
+  const txt = $('f_imp').value.trim();
+  if(!txt) return st('请粘贴数据','e');
+  const rows = txt.split('\n').filter(r=>r.trim());
+  let count = 0;
+  rows.forEach(row => {
+    const cols = row.split('\t');
+    if(cols.length < 6) return;
+    S.al({
+      交易时间: cols[0]||'',
+      交易类: cols[1]||'',
+      对方: cols[2]||'',
+      商品: cols[3]||'',
+      收: cols[4]||'',
+      金额: parseFloat(cols[5])||0,
+      支付方式: cols[6]||'',
+      状态: cols[7]||'',
+      交易单号: cols[8]||'',
+      商户单号: cols[9]||'',
+      备注: cols[10]||'',
+      水费: parseFloat(cols[11])||0,
+      电费: parseFloat(cols[12])||0
+    });
+    count++;
+  });
+  cm(); r('ledger-full'); st('成功导入 '+count+' 条记录');
+}
+
+// ===== UTILITIES =====
+function ru(m) {
+  const s = S.sum();
+  const bills = S.gb();
+  const tx = S.gtx();
+  
+  const water_income = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.水费||0),0);
+  const elec_income = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.电费||0),0);
+  
+  // 按楼栋分配
+  const detail = {};
+  bills.forEach(b => {
+    const k = b.building+'-'+b.type;
+    if(!detail[k]) detail[k]={income:0,expense:0};
+    detail[k].expense += b.amount;
+  });
+  tx.filter(t=>t.收==='收入'&&(t.水费||t.电费)).forEach(t => {
+    const tenant = S.gt().find(x => x.name === t.对方);
+    const room = tenant ? S.grm(tenant.roomId) : null;
+    const building = room ? room.building : '305栋';
+    if(t.电费) {
+      const k = building+'-电费';
+      if(!detail[k]) detail[k]={income:0,expense:0};
+      detail[k].income += t.电费||0;
+    }
+    if(t.水费) {
+      const k = building+'-水费';
+      if(!detail[k]) detail[k]={income:0,expense:0};
+      detail[k].income += t.水费||0;
+    }
+  });
+  
+  const buildings = ['305栋','106栋'];
+  const types = ['电费','水费'];
+  
+  m.innerHTML = `
+    <div class="ph"><h2>水电费管理</h2><button class="btn" onclick="oab()">+ 添加抄表</button></div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));">
+      <div class="sc"><div class="l">水费收入</div><div class="v">${fm(water_income)}</div></div>
+      <div class="sc"><div class="l">电费收入</div><div class="v">${fm(elec_income)}</div></div>
+      <div class="sc red"><div class="l">水电费支出</div><div class="v">${fm(s.ue)}</div></div>
+      <div class="sc green"><div class="l">水电费毛利</div><div class="v">${fm(s.up)}</div></div>
+    </div>
+    ${buildings.map(b => `
+      <h3 style="margin:16px 0 8px">${b}</h3>
+      <table><thead><tr><th>类型</th><th>收入</th><th>支出</th><th>毛利</th></tr></thead><tbody>
+      ${types.map(tp => {
+        const k = b+'-'+tp;
+        const di = detail[k] || {income:0,expense:0};
+        return `<tr><td>${tp}</td><td class="ts">${fm(di.income)}</td><td class="tr2">${fm(di.expense)}</td><td class="${di.income-di.expense>=0?'ts':'tr2'}">${fm(di.income-di.expense)}</td></tr>`;
+      }).join('')}
+      </tbody></table>
+    `).join('')}
+    <h3 style="margin:16px 0 8px">抄表记录</h3>
+    <table><thead><tr><th>月份</th><th>楼栋</th><th>类型</th><th>用量</th><th>金额</th><th>操作</th></tr></thead><tbody>
+    ${bills.sort((a,b)=>b.month>a.month?1:-1).map(b => `<tr><td>${ml(b.month)}</td><td>${b.building}</td><td>${b.type}</td><td>${b.usage||'-'}</td><td>${fm(b.amount)}</td><td><button class="btn sm dr" onclick="if(confirm('确认删除？')){S.gb().splice(S.gb().indexOf(b),1);S._save();r('utilities');}">删除</button></td></tr>`).join('')}
+    </tbody></table>
+  `;
+}
+function oab() {
+  om(`<h3>添加抄表记录</h3><div class="ff"><label>月份 <input id="f_bm" type="month"></label><label>楼栋 <select id="f_bb"><option value="305栋">305栋</option><option value="106栋">106栋</option></select></label><label>类型 <select id="f_bt"><option value="电费">电费</option><option value="水费">水费</option></select></label><label>用量 <input id="f_bu" type="number" placeholder="用量"></label><label>金额 <input id="f_ba" type="number" placeholder="金额"></label><button class="btn" onclick="sbb()">保存</button><button class="btn scd" onclick="cm()">取消</button></div>`);
+}
+function sbb() {
+  S.ab({month:$('f_bm').value,building:$('f_bb').value,type:$('f_bt').value,usage:parseFloat($('f_bu').value)||0,amount:parseFloat($('f_ba').value)||0});
+  cm(); r('utilities'); st('抄表记录添加成功');
+}
+
+// ===== DEPOSITS =====
+function rdp(m,d) {
+  const now = new Date().toISOString().slice(0,10);
+  const total = d.tenants.reduce((s,t)=>s+(t.deposit||0),0);
+  const unreturned = d.tenants.filter(t=>!t.depositReturned).reduce((s,t)=>s+(t.deposit||0),0);
+  m.innerHTML = `
+    <div class="ph"><h2>押金管理</h2></div>
+    <div class="grid">
+      <div class="sc"><div class="l">押金总额</div><div class="v">${fm(total)}</div></div>
+      <div class="sc green"><div class="l">已退押金</div><div class="v">${fm(total-unreturned)}</div></div>
+      <div class="sc red"><div class="l">未退押金</div><div class="v">${fm(unreturned)}</div></div>
+    </div>
+    <table><thead><tr><th>租户</th><th>房间</th><th>押金</th><th>状态</th><th>入住</th><th>到期</th><th>操作</th></tr></thead><tbody>
+    ${d.tenants.map(t => {
+      const r = S.grm(t.roomId);
+      return `<tr><td>${t.name}</td><td>${r?r.name:'-'}</td><td>${fm(t.deposit)}</td><td>${t.depositReturned?'<span class="tg">已退</span>':'<span class="tr">未退</span>'}</td><td>${fd(t.startDate)}</td><td>${fd(t.endDate)}</td><td>${!t.depositReturned?`<button class="btn sm" onclick="if(confirm('确认退还押金 ¥${t.deposit}？')){S.ut(t.id,{depositReturned:true});r('deposits');}">退还</button>`:''}</td></tr>`;
+    }).join('')}
+    </tbody></table>
+  `;
+}
+
+// ===== REPORTS =====
+function rrp(m,d,s) {
+  const months = Object.keys(s.mm).sort();
+  m.innerHTML = `
+    <div class="ph"><h2>报表分析</h2></div>
+    <div class="grid">
+      <div class="sc"><div class="l">总收入</div><div class="v ts">${fm(s.ti)}</div></div>
+      <div class="sc red"><div class="l">总支出</div><div class="v">${fm(s.te)}</div></div>
+      <div class="sc green"><div class="l">净利润</div><div class="v">${fm(s.ni)}</div></div>
+    </div>
+    <div class="grid">
+      <div class="sc"><div class="l">水费收入</div><div class="v ts">${fm(s.wi_water)}</div></div>
+      <div class="sc"><div class="l">电费收入</div><div class="v ts">${fm(s.wi_elec)}</div></div>
+      <div class="sc red"><div class="l">水电费支出</div><div class="v">${fm(s.ue)}</div></div>
+      <div class="sc green"><div class="l">水电费毛利</div><div class="v">${fm(s.up)}</div></div>
+    </div>
+    <div class="gc"><div class="gb"><canvas id="c3"></canvas></div></div>
+    <h3 style="margin:16px 0 8px">月度收支明细</h3>
+    <table><thead><tr><th>月份</th><th>收入</th><th>支出</th><th>结余</th></tr></thead><tbody>
+    ${months.map(m => {
+      const mi = s.mm[m].i, me = s.mm[m].e;
+      return `<tr><td>${ml(m)}</td><td class="ts">${fm(mi)}</td><td class="tr2">${fm(me)}</td><td class="${mi-me>=0?'ts':'tr2'}">${fm(mi-me)}</td></tr>`;
+    }).join('')}
+    </tbody></table>
+    <h3 style="margin:16px 0 8px">租户来源分布</h3>
+    <table><thead><tr><th>来源</th><th>人数</th></tr></thead><tbody>
+    ${Object.keys(s.sc).map(k => `<tr><td>${k}</td><td>${s.sc[k]}</td></tr>`).join('')}
+    </tbody></table>
+  `;
+  setTimeout(() => {
+    const c3=$('c3'); if(c3){if(charts.c3)charts.c3.destroy();const labels=months.map(m=>ml(m));const inc=months.map(m=>s.mm[m].i);const exp=months.map(m=>s.mm[m].e);charts.c3=new Chart(c3,{type:'bar',data:{labels,datasets:[{label:'收入',data:inc,backgroundColor:'#1a73e8'},{label:'支出',data:exp,backgroundColor:'#d93025'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'¥'+v.toLocaleString()}}}}});}
+  }, 100);
+}
+
+// ===== BACKUP =====
+function rbk(m,d) {
+  m.innerHTML = `
+    <div class="ph"><h2>数据备份</h2></div>
+    <div class="gc"><div class="gb">
+      <h3>导出数据</h3>
+      <p style="color:var(--text2);margin:8px 0 16px;font-size:13px">将所有数据导出为 JSON 文件，用于备份或迁移到其他设备。</p>
+      <button class="btn" onclick="edt()">📥 导出 JSON</button>
+    </div><div class="gb">
+      <h3>导入数据</h3>
+      <p style="color:var(--text2);margin:8px 0 16px;font-size:13px">从 JSON 文件恢复数据，会覆盖当前所有数据。</p>
+      <input type="file" id="f_impf" accept=".json" style="margin-bottom:8px">
+      <button class="btn" onclick="idt()">📤 导入 JSON</button>
+    </div></div>
+    <div class="gb" style="margin-top:16px">
+      <h3>数据统计</h3>
+      <p style="color:var(--text2);margin:8px 0;font-size:13px">房间 ${d.rooms.length} 间 · 租户 ${d.tenants.length} 人 · 收支记录 ${d.ledger.length} 条 · 抄表记录 ${d.bills.length} 条</p>
+      <p style="color:var(--text2);font-size:12px">云端同步：${ENABLE_CLOUD_SYNC?'<span class="tg">已启用</span>':'<span class="tr">已关闭</span>'} · Worker: ${WORKER_URL}</p>
+    </div>
+  `;
+}
+function edt() {
+  const json = S.exp();
+  const blob = new Blob([json], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'rent-manager-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  st('数据已导出');
+}
+function idt() {
+  const file = $('f_impf').files[0];
+  if(!file) return st('请选择文件','e');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      S.imp(data);
+      r(window.location.hash.slice(1) || 'dashboard');
+      st('数据导入成功');
+    } catch(err) {
+      st('导入失败：'+err.message,'e');
+    }
+  };
+  reader.readAsText(file);
 }
 
 // 页面加载时初始化
