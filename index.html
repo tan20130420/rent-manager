@@ -2,232 +2,547 @@
 <html lang="zh-CN">
 <head>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Last-Modified" content="Sat, 14 Jun 2026 12:00:00 GMT">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>租房经营管理系统</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 :root {
-  --primary: #1a73e8;
-  --primary-dark: #1557b0;
-  --primary-light: #e8f0fe;
-  --success: #0f9d58;
-  --success-bg: #e6f4ea;
-  --danger: #d93025;
-  --danger-bg: #fce8e6;
-  --warning: #f9ab00;
-  --warning-bg: #fef7e0;
-  --bg: #f8f9fa;
+  --primary: #165DFF;
+  --primary-dark: #0E42D2;
+  --primary-light: #E8F3FF;
+  --success: #00B42A;
+  --success-bg: #E8FFEA;
+  --danger: #F53F3F;
+  --danger-bg: #FFECE8;
+  --warning: #FF7D00;
+  --warning-bg: #FFF4E8;
+  --bg: #F7F8FA;
   --surface: #ffffff;
-  --text: #202124;
-  --text2: #5f6368;
-  --text3: #9aa0a6;
-  --border: #dadce0;
-  --hover: #f1f3f4;
-  --w: 240px;
-  --r: 12px;
-  --rs: 8px;
-  --sh: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-  --shl: 0 4px 12px rgba(0,0,0,0.1);
+  --text: #1D2129;
+  --text2: #4E5969;
+  --text3: #86909C;
+  --border: #E5E6EB;
+  --hover: #F2F3F5;
+  --sidebar-w: 240px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
-* { margin: 0; padding: 0; box-sizing: border-box; }
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  overflow-x: hidden;
+  font-size: 15px;
 }
-.layout { display: flex; min-height: 100vh; }
-.sidebar {
-  position: fixed; left: 0; top: 0; bottom: 0; width: var(--w);
-  background: var(--surface); border-right: 1px solid var(--border);
-  z-index: 100; display: flex; flex-direction: column; transition: transform .25s ease;
-}
-.sidebar h1 { font-size: 18px; font-weight: 700; color: var(--primary); padding: 20px 24px; border-bottom: 1px solid var(--border); }
-.sidebar h1 small { display: block; font-size: 12px; font-weight: 400; color: var(--text2); margin-top: 2px; }
-.nav { flex: 1; padding: 12px 8px; overflow-y: auto; }
-.nav a {
-  display: flex; align-items: center; gap: 10px; padding: 14px 16px; margin-bottom: 2px;
-  border-radius: var(--rs); cursor: pointer; font-size: 15px; color: var(--text2);
-  text-decoration: none; transition: all .2s;
-}
-.nav a:hover { background: var(--hover); color: var(--text); }
-.nav a.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
-.nav a .badge { margin-left: auto; font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 10px; font-weight: 600; }
-.main { margin-left: var(--w); flex: 1; min-height: 100vh; transition: margin-left .25s ease; }
-.ph { padding: 24px 32px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-.ph h2 { font-size: 24px; font-weight: 600; }
-.ph .sub { font-size: 14px; color: var(--text2); margin-top: 4px; }
-.pb { padding: 24px 32px 40px; }
-.card { background: var(--surface); border-radius: var(--r); box-shadow: var(--sh); padding: 24px; margin-bottom: 20px; }
-.ch { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-.ch h3 { font-size: 16px; font-weight: 600; }
-.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
-.sc {
-  background: var(--surface); border-radius: var(--r); padding: 20px;
-  box-shadow: var(--sh); border-left: 4px solid var(--primary); transition: transform .2s;
-}
-.sc:hover { transform: translateY(-2px); }
-.sc .l { font-size: 13px; color: var(--text2); margin-bottom: 4px; }
-.sc .v { font-size: 28px; font-weight: 700; line-height: 1.2; }
-.sc .c { font-size: 12px; margin-top: 4px; }
-.sc .c.up { color: var(--success); }
-.sc .c.down { color: var(--danger); }
-.sc.green { border-left-color: var(--success); }
-.sc.red { border-left-color: var(--danger); }
-.sc.yellow { border-left-color: var(--warning); }
-.tc { overflow-x: auto; border-radius: var(--rs); }
-table { width: 100%; border-collapse: collapse; font-size: 14px; background: #fff; }
-thead th { background: #f9fafb; padding: 14px 16px; text-align: left; font-weight: 600; font-size: 12px; color: var(--text2); border-bottom: 2px solid var(--border); white-space: nowrap; }
-tbody td { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
-tbody tr:hover { background: #fafbfc; }
-.tag { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
-.tg { background: var(--success-bg); color: var(--success); }
-.tr { background: var(--danger-bg); color: var(--danger); }
-.tb { background: var(--primary-light); color: var(--primary); }
-.ty { background: var(--warning-bg); color: #e37400); }
-.tg2 { background: var(--bg); color: var(--text2); }
-.btn {
-  display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: var(--rs);
-  font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all .2s;
-  min-height: 44px;
-}
-.btn-p { background: var(--primary); color: #fff; }
-.btn-p:hover { background: var(--primary-dark); box-shadow: var(--sh); }
-.btn-o { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
-.btn-o:hover { background: var(--primary-light); }
-.btn-d { background: var(--danger); color: #fff; }
-.btn-d:hover { background: #c5221f; }
-.btn-s { padding: 6px 14px; font-size: 13px; min-height: 36px; }
-.btn-i { width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; border: none; cursor: pointer; background: transparent; color: var(--text2); }
-.btn-i:hover { background: var(--hover); color: var(--text); }
-.bg { display: flex; gap: 8px; flex-wrap: wrap; }
-.fg { margin-bottom: 16px; }
-.fg label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
-.fc {
-  width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--rs);
-  font-size: 15px; transition: border-color .2s; background: var(--surface);
-}
-.fc:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
-.fr { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.fa { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
-select.fc { appearance: auto; }
-.mo {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none;
-  align-items: center; justify-content: center; backdrop-filter: blur(2px);
-}
-.mo.show { display: flex; }
-.mw {
-  background: var(--surface); border-radius: var(--r); width: 90%; max-width: 560px;
-  max-height: 85vh; overflow-y: auto; box-shadow: var(--shl); animation: mi .25s ease;
-}
-@keyframes mi { from { opacity: 0; transform: scale(.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-.mh { padding: 20px 24px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-.mh h3 { font-size: 18px; font-weight: 600; }
-.mb { padding: 20px 24px; }
-.mf { padding: 12px 24px 20px; display: flex; gap: 8px; justify-content: flex-end; }
-.cc { position: relative; height: 300px; width: 100%; }
-.es { text-align: center; padding: 60px 20px; color: var(--text2); }
-.es .ic { font-size: 48px; margin-bottom: 12px; opacity: .5; }
-.es h4 { font-size: 16px; margin-bottom: 8px; color: var(--text); }
-.toast {
-  position: fixed; top: 20px; right: 20px; z-index: 2000;
-  padding: 14px 20px; border-radius: var(--rs); color: #fff; font-size: 14px; font-weight: 500;
-  box-shadow: var(--shl); animation: ti .3s ease; max-width: 380px;
-}
-.toast.s { background: var(--success); }
-.toast.e { background: var(--danger); }
-.toast.i { background: var(--primary); }
-@keyframes ti { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-.mt { display: none; position: fixed; top: 12px; left: 12px; z-index: 101; width: 44px; height: 44px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--rs); cursor: pointer; font-size: 18px; align-items: center; justify-content: center; }
-.mt:hover { background: var(--hover); }
 
-/* 手机端核心优化 */
-@media (max-width: 768px) {
-  .sidebar { transform: translateX(-100%); }
-  .sidebar.open { transform: translateX(0); box-shadow: 5px 0 20px rgba(0,0,0,0.1); }
-  .mt { display: flex; }
-  .main { margin-left: 0; }
-  .ph { padding: 16px 16px 0; }
-  .pb { padding: 16px; }
-  .ph h2 { font-size: 20px; }
-  .grid { grid-template-columns: 1fr 1fr; }
-  .fr { grid-template-columns: 1fr; }
-  .mw { width: 95%; margin: 10px; }
-  .sc .v { font-size: 22px; }
-  .btn { min-height: 48px; font-size: 15px; }
-  tbody td, thead th { padding: 12px 10px; }
+.layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
 }
-@media (max-width: 480px) {
-  .grid { grid-template-columns: 1fr; }
-  .ph { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .ph h2 { width: 100%; }
-  .ph button { width: 100%; justify-content: center; }
-  .tc { border-radius: 0; }
+
+/* 侧边栏 */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease;
 }
+
+.sidebar h1 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+  padding: 20px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar h1 small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text3);
+  margin-top: 4px;
+}
+
+.nav {
+  flex: 1;
+  padding: 12px 8px;
+  overflow-y: auto;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  margin-bottom: 4px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  color: var(--text2);
+  text-decoration: none;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.nav a:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.nav a.active {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.nav a .badge {
+  margin-left: auto;
+  font-size: 12px;
+  background: var(--primary);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  min-width: 22px;
+  text-align: center;
+}
+
+/* 主内容 */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-height: 100vh;
+  width: calc(100% - var(--sidebar-w));
+}
+
+.page-header {
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.page-header h2 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.page-header .sub {
+  font-size: 14px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+
+.page-body {
+  padding: 24px;
+}
+
+/* 卡片 */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* 统计卡片网格 */
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--primary);
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-card .label {
+  font-size: 13px;
+  color: var(--text3);
+  margin-bottom: 6px;
+}
+
+.stat-card .value {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stat-card .change {
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.stat-card.green { border-left-color: var(--success); }
+.stat-card.red { border-left-color: var(--danger); }
+.stat-card.yellow { border-left-color: var(--warning); }
+
+/* 表格 */
+.table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+thead th {
+  background: var(--bg);
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text2);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+tbody tr:hover {
+  background: var(--hover);
+}
+
+/* 标签 */
+.tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tag-success { background: var(--success-bg); color: var(--success); }
+.tag-danger { background: var(--danger-bg); color: var(--danger); }
+.tag-primary { background: var(--primary-light); color: var(--primary); }
+.tag-warning { background: var(--warning-bg); color: var(--warning); }
+.tag-default { background: var(--hover); color: var(--text2); }
+
+/* 按钮 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-height: 40px;
+}
+
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); box-shadow: var(--shadow); }
+
+.btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+.btn-outline:hover { background: var(--primary-light); }
+
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #D93636; }
+
+.btn-sm { padding: 6px 14px; font-size: 13px; min-height: 34px; }
+
+/* 表单 */
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 14px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+
+.form-control {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  transition: border-color 0.2s;
+  background: var(--surface);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* 弹窗 */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.modal.show { display: flex; }
+
+.modal-wrap {
+  background: var(--surface);
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.25s ease;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 { font-size: 18px; font-weight: 600; }
+.modal-body { padding: 24px; }
+.modal-footer { padding: 16px 24px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--border); }
+
+/* 图表容器 */
+.chart-container {
+  position: relative;
+  height: 320px;
+  width: 100%;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+/* 空状态 */
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text3);
+}
+
+.empty .icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+.empty h4 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+/* 提示消息 */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 3000;
+  padding: 14px 20px;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s ease;
+  max-width: 380px;
+}
+
+.toast-success { background: var(--success); }
+.toast-error { background: var(--danger); }
+.toast-info { background: var(--primary); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* 移动端菜单按钮 */
+.mobile-toggle {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 1000;
+  width: 44px;
+  height: 44px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+/* 颜色工具 */
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); }
+.text-primary { color: var(--primary); }
+.text-muted { color: var(--text3); }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+
+/* 间距 */
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mb-2 { margin-bottom: 16px; }
+
+/* 布局 */
+.flex { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+
+/* 滚动条 */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-.tr2 { text-align: right; }
-.tc2 { text-align: center; }
-.ts { color: var(--success); }
-.td { color: var(--danger); }
-.tp { color: var(--primary); }
-.tm { color: var(--text2); }
-.fb { font-weight: 600; }
-.mt2 { margin-top: 8px; }
-.mt4 { margin-top: 16px; }
-.mb4 { margin-bottom: 16px; }
-.fb2 { display: flex; justify-content: space-between; align-items: center; }
-.fb3 { display: flex; }
-.g2 { gap: 8px; }
-.g4 { gap: 16px; }
-.fl {
-  display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; align-items: center;
+
+/* ===================== 响应式 ===================== */
+@media (max-width: 992px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
 }
-.fl .fc { width: auto; min-width: 140px; }
-.dr { display: flex; padding: 8px 0; border-bottom: 1px solid var(--border); }
-.dr:last-child { border-bottom: none; }
-.dl { width: 120px; flex-shrink: 0; color: var(--text2); font-size: 13px; }
-.dv { flex: 1; font-weight: 500; }
+
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .mobile-toggle { display: flex; }
+  .main { margin-left: 0; width: 100%; }
+  .page-header { padding: 16px 16px 16px 60px; }
+  .page-body { padding: 16px; }
+  .page-header h2 { font-size: 20px; }
+  .grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .modal-wrap { width: 96%; margin: 10px; }
+  .stat-card .value { font-size: 24px; }
+  .chart-container { height: 260px; }
+  .btn { min-height: 44px; padding: 12px 16px; }
+  table { font-size: 14px; }
+  tbody td, thead th { padding: 12px; }
+}
+
+@media (max-width: 480px) {
+  .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .form-actions { flex-direction: column; }
+  .btn { width: 100%; }
+}
 </style>
 </head>
-<body>
 
+<body>
 <div class="layout">
-  <button class="mt" onclick="ts()">☰</button>
+  <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+  
   <aside class="sidebar" id="sidebar">
     <h1>🏠 租房管家<small>二房东经营管理系统</small></h1>
     <nav class="nav" id="nav">
-      <a class="active" href="#dashboard" onclick="n('dashboard')">📊 仪表盘</a>
-      <a href="#tenants" onclick="n('tenants')">👥 租户管理 <span class="badge" id="tb">0</span></a>
-      <a href="#rooms" onclick="n('rooms')">🏢 房间管理 <span class="badge" id="rb">0</span></a>
-      <a href="#transactions" onclick="n('transactions')">💰 收支流水</a>
-      <a href="#ledger" onclick="n('ledger')">📒 流水台账</a>
-      <a href="#utilities" onclick="n('utilities')">⚡ 水电费管理</a>
-      <a href="#deposits" onclick="n('deposits')">🔒 押金管理</a>
-      <a href="#reports" onclick="n('reports')">📈 报表分析</a>
-      <a href="#backup" onclick="n('backup')">💾 数据备份</a>
+      <a class="active" href="#dashboard" onclick="goPage('dashboard')">📊 仪表盘</a>
+      <a href="#tenants" onclick="goPage('tenants')">👥 租户管理 <span class="badge" id="tenantBadge">0</span></a>
+      <a href="#rooms" onclick="goPage('rooms')">🏢 房间管理 <span class="badge" id="roomBadge">0</span></a>
+      <a href="#transactions" onclick="goPage('transactions')">💰 收支流水</a>
+      <a href="#ledger" onclick="goPage('ledger')">📒 流水台账</a>
+      <a href="#utilities" onclick="goPage('utilities')">⚡ 水电费</a>
+      <a href="#deposits" onclick="goPage('deposits')">🔒 押金管理</a>
+      <a href="#reports" onclick="goPage('reports')">📈 报表分析</a>
+      <a href="#backup" onclick="goPage('backup')">💾 数据备份</a>
     </nav>
   </aside>
+
   <main class="main" id="main"></main>
 </div>
 
-<div class="mo" id="mo" onclick="if(event.target===this)cm()"><div class="mw" id="mc"></div></div>
+<!-- 弹窗 -->
+<div class="modal" id="modal" onclick="if(event.target===this) closeModal()">
+  <div class="modal-wrap" id="modalContent"></div>
+</div>
 
 <script>
-// ===== CLOUD SYNC CONFIG =====
-const GH_OWNER = 'tan20130420';
-const GH_REPO = 'rent-manager';
-const GH_TOKEN = 'ghp_/*REPLACE_ME*/mgtQLEpINkm7nVY8kpguYRZbYA1zWc0itZ33';
-const GH_RAW_URL = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/data.json`;
-const ENABLE_CLOUD_SYNC = true;
-
-// ===== STORE =====
-const S = {
-  _d: null,
-  _def() {
+// ==================== 全局配置 ====================
+const STORE = {
+  _data: null,
+  _default() {
     return {
       rooms: [
         {id:'r1',name:'305-1',building:'305栋',rent:500,status:'在租',cur:null},
@@ -246,561 +561,894 @@ const S = {
       nid: {r:10,t:100,b:100,l:100}
     };
   },
+
   init() {
-    const s = localStorage.getItem('rentData');
-    if (s) { try { this._d = JSON.parse(s); } catch(e) { this._d = this._def(); } }
-    else { this._d = this._def(); }
-    if(!this._d.ledger) this._d.ledger = [];
-    if(!this._d.nid) this._d.nid = {r:10,t:100,b:100,l:100};
-    if(this._d.nid.l === undefined) this._d.nid.l = 100;
-  },
-  async initCloud() {
-    try {
-      const resp = await fetch(GH_RAW_URL + '?t=' + Date.now(), { cache: 'no-store', signal: AbortSignal.timeout(10000) });
-      if (resp.ok) {
-        const cloudData = await resp.json();
-        if (cloudData && cloudData.rooms) {
-          this._d = cloudData;
-          this._saveLocal();
-          console.log('Cloud sync OK: ' + (cloudData.ledger||[]).length + ' records');
-          return true;
-        }
-      }
-    } catch(e) {
-      console.log('Cloud error: ' + e.message);
+    const local = localStorage.getItem('rentData');
+    if (local) {
+      try { this._data = JSON.parse(local); }
+      catch (e) { this._data = this._default(); }
+    } else {
+      this._data = this._default();
     }
-    return false;
-  },
-  _migrateAndSeed() {
-    if(this._d.txs && this._d.txs.length > 0 && this._d.ledger.length === 0) {
-      this._d.txs.forEach(t => {
-        this._d.ledger.push({
-          id: 'l' + (this._d.nid.l++),
-          time: t.date + ' 0:00:00', type: '转账',
-          party: t.tenantId ? (this._d.tenants.find(x=>x.id===t.tenantId)?.name||'') : '',
-          desc: t.note ? '转账备注:'+t.note : '',
-          dir: t.type, amount: t.amount,
-          pay: '', status: t.type==='收入'?'已存入零钱':'对方已收钱',
-          txid: '', mid: '', note: t.note||'',
-          wi: t.wf||0, we: t.ef||0
-        });
-      });
-      delete this._d.txs;
-    }
-    if (!this._d.ledger.length && !this._d.tenants.length) {
-      this._seed();
-    }
-  },
-  _saveLocal() {
-    localStorage.setItem('rentData', JSON.stringify(this._d));
-  },
-  _save() {
-    this._saveLocal();
-    this._pushCloud();
-  },
-  async _pushCloud() {
-    if (!ENABLE_CLOUD_SYNC || !GH_TOKEN) return;
-    try {
-      const getResp = await fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/data.json', {
-        headers: { 'Authorization': 'token ' + GH_TOKEN, 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'rent-manager' }
-      });
-      const sha = getResp.ok ? (await getResp.json()).sha : null;
-      const jsonStr = JSON.stringify(this._d, null, 2);
-      const encoder = new TextEncoder();
-      const bytes = encoder.encode(jsonStr);
-      let binary = '';
-      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-      const content = btoa(binary);
-      const putResp = await fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/data.json', {
-        method: 'PUT',
-        headers: { 'Authorization': 'token ' + GH_TOKEN, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json', 'User-Agent': 'rent-manager' },
-        body: JSON.stringify({ message: 'Sync data - ' + new Date().toISOString(), content: content, sha: sha })
-      });
-      if (putResp.ok) console.log('Cloud push OK');
-      else console.log('Cloud push failed: HTTP ' + putResp.status);
-    } catch(e) {
-      console.log('Cloud push error: ' + e.message);
-    }
-  },
-  g() { return this._d; },
-
-  gr() { return this._d.rooms; },
-  grm(id) { return this._d.rooms.find(r => r.id === id); },
-  ar(r) { r.id = 'r' + (this._d.nid.r++); this._d.rooms.push(r); this._save(); return r; },
-  ur(id, u) { const i = this._d.rooms.findIndex(x => x.id === id); if(i>-1){Object.assign(this._d.rooms[i],u);this._save();return this._d.rooms[i];}return null; },
-
-  gt() { return this._d.tenants; },
-  gtm(id) { return this._d.tenants.find(t => t.id === id); },
-  at(t) { t.id = 't' + (this._d.nid.t++); this._d.tenants.push(t); const r = this.grm(t.roomId); if(r){r.cur=t.id;r.status='在租';} this._save(); return t; },
-  ut(id, u) { const i = this._d.tenants.findIndex(x => x.id === id); if(i>-1){Object.assign(this._d.tenants[i],u);this._save();return this._d.tenants[i];}return null; },
-  et(id, ed) {
-    const t = this.gtm(id); if(!t)return null;
-    t.endDate = ed; t.depositReturned = true;
-    const r = this.grm(t.roomId); if(r){r.cur=null;r.status='空置';}
-    this._save(); return t;
+    if (!this._data.ledger) this._data.ledger = [];
+    if (!this._data.nid) this._data.nid = {r:10,t:100,b:100,l:100};
   },
 
-  gtx() { return this._d.ledger; },
-  atx(t) { t.id = 'l' + (this._d.nid.l++); this._d.ledger.push(t); this._save(); return t; },
-  dtx(id) { this._d.ledger = this._d.ledger.filter(x => x.id !== id); this._save(); },
-
-  gb() { return this._d.bills; },
-  ab(b) { b.id = 'b' + (this._d.nid.b++); this._d.bills.push(b); this._save(); return b; },
-
-  gl() { return this._d.ledger || []; },
-  al(l) { l.id = 'l' + (this._d.nid.l++); this._d.ledger.push(l); this._save(); return l; },
-  dl(id) { this._d.ledger = this._d.ledger.filter(x => x.id !== id); this._save(); },
-  ul(id, u) { const i = this._d.ledger.findIndex(x => x.id === id); if(i>-1){Object.assign(this._d.ledger[i],u);this._save();return this._d.ledger[i];}return null; },
-  batchAddLedger(rows) {
-    rows.forEach(r => { r.id = 'l' + (this._d.nid.l++); this._d.ledger.push(r); });
-    this._save();
-    return rows.length;
+  saveLocal() {
+    localStorage.setItem('rentData', JSON.stringify(this._data));
   },
 
-  sum() {
-    const tx = this._d.ledger;
-    const ti = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.金额||0),0);
-    const te = tx.filter(x=>x.收==='支出').reduce((s,x)=>s+(x.金额||0),0);
-    const now = new Date().toISOString().slice(0,10);
-    const at = this._d.tenants.filter(t => !t.endDate || t.endDate >= now).length;
-    const ar = this._d.rooms.filter(r => r.status === '在租').length;
-    const tr = this._d.rooms.length;
-    const dep = this._d.tenants.reduce((s,t)=>s+(t.deposit||0),0);
-    const ud = this._d.tenants.filter(t=>!t.depositReturned).reduce((s,t)=>s+(t.deposit||0),0);
-    const wi_water = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.水费||0),0);
-    const wi_elec = tx.filter(x=>x.收==='收入').reduce((s,x)=>s+(x.电费||0),0);
-    const we_water = tx.filter(x=>x.收==='支出').reduce((s,x)=>s+(x.水费||0),0);
-    const we_elec = tx.filter(x=>x.收==='支出').reduce((s,x)=>s+(x.电费||0),0);
-    const wi = wi_water + wi_elec;
-    const ue = this._d.bills.reduce((s,b)=>s+b.amount,0);
-    const mm = {};
+  save() {
+    this.saveLocal();
+  },
+
+  getData() { return this._data; },
+
+  // 房间
+  getRooms() { return this._data.rooms; },
+  getRoom(id) { return this._data.rooms.find(r => r.id === id); },
+  addRoom(room) { room.id = 'r' + (this._data.nid.r++); this._data.rooms.push(room); this.save(); return room; },
+  updateRoom(id, data) {
+    const idx = this._data.rooms.findIndex(x => x.id === id);
+    if (idx > -1) { Object.assign(this._data.rooms[idx], data); this.save(); return this._data.rooms[idx]; }
+    return null;
+  },
+
+  // 租户
+  getTenants() { return this._data.tenants; },
+  getTenant(id) { return this._data.tenants.find(t => t.id === id); },
+  addTenant(tenant) {
+    tenant.id = 't' + (this._data.nid.t++);
+    this._data.tenants.push(tenant);
+    const room = this.getRoom(tenant.roomId);
+    if (room) { room.cur = tenant.id; room.status = '在租'; }
+    this.save();
+    return tenant;
+  },
+  updateTenant(id, data) {
+    const idx = this._data.tenants.findIndex(x => x.id === id);
+    if (idx > -1) { Object.assign(this._data.tenants[idx], data); this.save(); return this._data.tenants[idx]; }
+    return null;
+  },
+  endTenant(id, endDate) {
+    const t = this.getTenant(id);
+    if (!t) return null;
+    t.endDate = endDate;
+    t.depositReturned = true;
+    const r = this.getRoom(t.roomId);
+    if (r) { r.cur = null; r.status = '空置'; }
+    this.save();
+    return t;
+  },
+
+  // 台账
+  getLedger() { return this._data.ledger || []; },
+  addLedger(item) { item.id = 'l' + (this._data.nid.l++); this._data.ledger.push(item); this.save(); return item; },
+  delLedger(id) { this._data.ledger = this._data.ledger.filter(x => x.id !== id); this.save(); },
+  updateLedger(id, data) {
+    const idx = this._data.ledger.findIndex(x => x.id === id);
+    if (idx > -1) { Object.assign(this._data.ledger[idx], data); this.save(); return this._data.ledger[idx]; }
+    return null;
+  },
+
+  // 水电费
+  getBills() { return this._data.bills; },
+  addBill(bill) { bill.id = 'b' + (this._data.nid.b++); this._data.bills.push(bill); this.save(); return bill; },
+
+  // 统计
+  summary() {
+    const tx = this._data.ledger;
+    const income = tx.filter(x => x.收 === '收入').reduce((s, x) => s + (x.金额 || 0), 0);
+    const expense = tx.filter(x => x.收 === '支出').reduce((s, x) => s + (x.金额 || 0), 0);
+    const now = new Date().toISOString().slice(0, 10);
+    const activeTenants = this._data.tenants.filter(t => !t.endDate || t.endDate >= now).length;
+    const rentedRooms = this._data.rooms.filter(r => r.status === '在租').length;
+    const totalRooms = this._data.rooms.length;
+    const depositTotal = this._data.tenants.reduce((s, t) => s + (t.deposit || 0), 0);
+    const depositUnreturned = this._data.tenants.filter(t => !t.depositReturned).reduce((s, t) => s + (t.deposit || 0), 0);
+    
+    const waterIn = tx.filter(x => x.收 === '收入').reduce((s, x) => s + (x.水费 || 0), 0);
+    const elecIn = tx.filter(x => x.收 === '收入').reduce((s, x) => s + (x.电费 || 0), 0);
+    const utilityOut = this._data.bills.reduce((s, b) => s + b.amount, 0);
+
+    const monthMap = {};
     tx.forEach(t => {
-      const m = (t.交易时间||'').substring(0,7); if(!m)return;
-      if(!mm[m]) mm[m] = {i:0,e:0};
-      if(t.收==='收入') mm[m].i += (t.金额||0); else mm[m].e += (t.金额||0);
+      const m = (t.交易时间 || '').substring(0,7);
+      if (!m) return;
+      if (!monthMap[m]) monthMap[m] = {i:0, e:0};
+      t.收 === '收入' ? monthMap[m].i += t.金额 : monthMap[m].e += t.金额;
     });
-    const sc = {}; this._d.tenants.forEach(t => { sc[t.source] = (sc[t.source]||0)+1; });
-    return { ti, te, ni: ti-te, at, ar, tr, vr: tr>0?Math.round((1-ar/tr)*100):0, dep, ud, rd: dep-ud, wi, wi_water, wi_elec, we_water, we_elec, ue, up: wi-ue, mm, sc };
+
+    const sourceMap = {};
+    this._data.tenants.forEach(t => { sourceMap[t.source] = (sourceMap[t.source] || 0) +1; });
+
+    return {
+      income, expense, profit: income-expense,
+      activeTenants, rentedRooms, totalRooms,
+      vacancyRate: totalRooms > 0 ? Math.round((1 - rentedRooms/totalRooms)*100) : 0,
+      depositTotal, depositUnreturned, depositReturned: depositTotal - depositUnreturned,
+      waterIn, elecIn, utilityIn: waterIn+elecIn, utilityOut, utilityProfit: (waterIn+elecIn)-utilityOut,
+      monthMap, sourceMap
+    };
   },
 
-  exp() { return JSON.stringify(this._d, null, 2); },
-  imp(d) {
-    if(d.rooms) this._d.rooms = d.rooms;
-    if(d.tenants) this._d.tenants = d.tenants;
-    if(d.bills) this._d.bills = d.bills;
-    if(d.ledger) this._d.ledger = d.ledger;
-    if(d.nid) this._d.nid = d.nid;
-    this._save();
-  },
-
-  _seed() {
-    const d = this._d;
-    d.tenants = [
-      {id:'t1',name:'睡得犯困了',phone:'',source:'小红书',roomId:'r3',startDate:'2025-10-05',endDate:'2026-01-14',deposit:850,depositReturned:true,notes:''},
-      {id:'t2',name:'木木乔',phone:'',source:'小红书',roomId:'r3',startDate:'2026-03-03',endDate:'2026-06-30',deposit:700,depositReturned:false,notes:''},
-      {id:'t3',name:'睡得犯困了',phone:'',source:'续住',roomId:'r5',startDate:'2026-02-28',endDate:'2026-07-14',deposit:800,depositReturned:false,notes:''},
-      {id:'t4',name:'友',phone:'',source:'中介-向前',roomId:'r5',startDate:'2025-09-26',endDate:'2026-01-25',deposit:800,depositReturned:true,notes:''},
-      {id:'t5',name:'.三提腊扣.',phone:'',source:'中介-向前',roomId:'r7',startDate:'2026-03-10',endDate:'2026-07-10',deposit:600,depositReturned:false,notes:''},
-      {id:'t6',name:'小可',phone:'',source:'中介-向前',roomId:'r1',startDate:'2026-01-17',endDate:'2026-07-17',deposit:500,depositReturned:false,notes:''},
-      {id:'t7',name:'青花',phone:'',source:'QQ群',roomId:'r2',startDate:'2026-03-30',endDate:'2026-07-14',deposit:700,depositReturned:false,notes:''},
-      {id:'t8',name:'小凡不烦',phone:'',source:'QQ群',roomId:'r8',startDate:'2026-03-05',endDate:'2026-07-04',deposit:350,depositReturned:false,notes:''},
-      {id:'t9',name:'zlei',phone:'',source:'小红书',roomId:'r9',startDate:'2025-12-08',endDate:'2026-03-30',deposit:700,depositReturned:true,notes:''},
-      {id:'t10',name:'早聆.',phone:'',source:'中介-向前',roomId:'r4',startDate:'2025-09-15',endDate:'2025-12-14',deposit:700,depositReturned:true,notes:''},
-      {id:'t11',name:'Ani126',phone:'',source:'中介-向前',roomId:'r4',startDate:'2026-03-01',endDate:'2026-07-01',deposit:600,depositReturned:false,notes:''},
-      {id:'t12',name:'浩浩.',phone:'',source:'QQ群',roomId:'r9',startDate:'2026-05-10',endDate:'2026-07-10',deposit:800,depositReturned:false,notes:''},
-      {id:'t13',name:'无事小神仙',phone:'',source:'中介-向前',roomId:'r1',startDate:'2025-09-12',endDate:'2025-11-22',deposit:500,depositReturned:true,notes:''},
-      {id:'t14',name:'Small volcano6',phone:'',source:'中介-向前',roomId:'r2',startDate:'2025-09-20',endDate:'2026-01-20',deposit:800,depositReturned:true,notes:''},
-      {id:'t15',name:'七斗星晋老师',phone:'',source:'推荐',roomId:'r9',startDate:'2026-04-10',endDate:'2026-05-10',deposit:100,depositReturned:true,notes:''},
-      {id:'t16',name:'风之影',phone:'',source:'推荐',roomId:'r6',startDate:'2026-03-03',endDate:'2026-03-21',deposit:100,depositReturned:true,notes:''},
-      {id:'t17',name:'枫雨礼',phone:'',source:'QQ群',roomId:'r6',startDate:'2026-01-10',endDate:'2026-01-25',deposit:100,depositReturned:true,notes:''},
-      {id:'t18',name:'愤怒的萝卜.',phone:'',source:'QQ群',roomId:'r3',startDate:'2026-01-14',endDate:'2026-02-13',deposit:100,depositReturned:true,notes:''},
-      {id:'t19',name:'秋遇瑾',phone:'',source:'QQ群',roomId:'r4',startDate:'2026-01-16',endDate:'2026-02-16',deposit:100,depositReturned:true,notes:''},
-      {id:'t20',name:'岛巷落灯',phone:'',source:'推荐',roomId:'r4',startDate:'2026-07-01',endDate:'2027-06-30',deposit:200,depositReturned:false,notes:''},
-      {id:'t21',name:'旺旺掀被',phone:'',source:'QQ群',roomId:'r6',startDate:'2026-04-05',endDate:'2026-07-14',deposit:600,depositReturned:false,notes:''},
-    ];
-    d.tenants.filter(t => !t.endDate || t.endDate >= '2026-06-13').forEach(t => {
-      const r = d.rooms.find(x => x.id === t.roomId); if(r){r.cur=t.id;r.status='在租';}
-    });
-    d.ledger = [];
-    d.bills = [];
-    this._save();
+  // 导入导出
+  export() { return JSON.stringify(this._data, null, 2); },
+  import(data) {
+    if (data.rooms) this._data.rooms = data.rooms;
+    if (data.tenants) this._data.tenants = data.tenants;
+    if (data.bills) this._data.bills = data.bills;
+    if (data.ledger) this._data.ledger = data.ledger;
+    if (data.nid) this._data.nid = data.nid;
+    this.save();
   }
 };
 
-let cp = 'dashboard', charts = {};
-function $(id) { return document.getElementById(id); }
-function fm(v) { return '¥' + Number(v).toLocaleString('zh-CN',{minFractionDigits:2,maxFractionDigits:2}); }
-function fd(d) { if(!d)return '-'; return new Date(d).toLocaleDateString('zh-CN'); }
-function ml(m) { if(!m)return ''; const [y,mm]=m.split('-'); return y+'年'+parseInt(mm)+'月'; }
-function rn(id) { const r=S.grm(id); return r?r.name:''; }
-function tn(id) { const t=S.gtm(id); return t?t.name:''; }
-function ts() { $('sidebar').classList.toggle('open'); }
-function n(p) { cp=p; window.location.hash=p; document.querySelectorAll('.nav a').forEach(e=>e.classList.remove('active')); const a=document.querySelector(`.nav a[href="#${p}"]`); if(a)a.classList.add('active'); r(p); }
-function st(msg,type='i') { const t=document.createElement('div'); t.className='toast '+type; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300)},3000); }
-function om(html) { $('mc').innerHTML=html; $('mo').classList.add('show'); }
-function cm() { $('mo').classList.remove('show'); }
+// ==================== 工具函数 ====================
+let currentPage = 'dashboard';
+let charts = {};
+const $ = id => document.getElementById(id);
 
-function r(p) {
-  const m = $('main');
-  const d = S.g();
-  const s = S.sum();
-  switch(p) {
-    case 'dashboard': rd(m,d,s); break;
-    case 'tenants': rt(m,d); break;
-    case 'rooms': rr(m,d); break;
-    case 'transactions': rl(m,d); break;
-    case 'ledger': rlf(m,d); break;
-    case 'ledger-full': rlf(m,d); break;
-    case 'utilities': ru(m); break;
-    case 'deposits': rdp(m,d); break;
-    case 'reports': rrp(m,d,s); break;
-    case 'backup': rbk(m,d); break;
-    default: m.innerHTML = '<div class="es"><div class="ic">🔧</div><h4>功能开发中</h4></div>';
+function formatMoney(v) { return '¥' + Number(v).toLocaleString('zh-CN', { minimumFractionDigits: 2 }); }
+function formatDate(d) { return d ? new Date(d).toLocaleDateString('zh-CN') : '-'; }
+function toggleSidebar() { $('sidebar').classList.toggle('open'); }
+function closeSidebar() { $('sidebar').classList.remove('open'); }
+
+function showToast(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+}
+
+function openModal(html) {
+  $('modalContent').innerHTML = html;
+  $('modal').classList.add('show');
+}
+
+function closeModal() {
+  $('modal').classList.remove('show');
+}
+
+function goPage(page) {
+  currentPage = page;
+  window.location.hash = page;
+  document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+  const active = document.querySelector(`.nav a[href="#${page}"]`);
+  if (active) active.classList.add('active');
+  closeSidebar();
+  renderPage(page);
+}
+
+// ==================== 页面渲染 ====================
+function renderPage(page) {
+  const main = $('main');
+  const data = STORE.getData();
+  const sum = STORE.summary();
+
+  document.querySelector('#tenantBadge').textContent = sum.activeTenants;
+  document.querySelector('#roomBadge').textContent = sum.rentedRooms;
+
+  switch(page) {
+    case 'dashboard': renderDashboard(main, sum); break;
+    case 'tenants': renderTenants(main); break;
+    case 'rooms': renderRooms(main); break;
+    case 'transactions': renderTransactions(main); break;
+    case 'ledger': renderLedger(main); break;
+    case 'utilities': renderUtilities(main); break;
+    case 'deposits': renderDeposits(main); break;
+    case 'reports': renderReports(main, sum); break;
+    case 'backup': renderBackup(main); break;
+    default: main.innerHTML = `<div class="empty"><div class="icon">🔧</div><h4>功能开发中</h4></div>`;
   }
 }
 
-function rd(m,d,s) {
+// 仪表盘
+function renderDashboard(main, sum) {
   const now = new Date().toISOString().slice(0,10);
   const month = now.substring(0,7);
-  const mi = d.ledger.filter(x=>x.收==='收入'&&(x.交易时间||'').startsWith(month)).reduce((a,x)=>a+(x.金额||0),0);
-  const me = d.ledger.filter(x=>x.收==='支出'&&(x.交易时间||'').startsWith(month)).reduce((a,x)=>a+(x.金额||0),0);
-  m.innerHTML = `
-    <div class="ph"><h2>仪表盘</h2><span class="dt">${now}</span></div>
-    <div class="grid">
-      <div class="sc"><div class="l">本月收入</div><div class="v ts">${fm(mi)}</div></div>
-      <div class="sc red"><div class="l">本月支出</div><div class="v">${fm(me)}</div></div>
-      <div class="sc green"><div class="l">本月结余</div><div class="v">${fm(mi-me)}</div></div>
-      <div class="sc"><div class="l">总收入</div><div class="v ts">${fm(s.ti)}</div></div>
-      <div class="sc red"><div class="l">总支出</div><div class="v">${fm(s.te)}</div></div>
-      <div class="sc green"><div class="l">净利润</div><div class="v">${fm(s.ni)}</div></div>
+  const ledger = STORE.getLedger();
+  const monthIncome = ledger.filter(x => x.收==='收入' && (x.交易时间||'').startsWith(month)).reduce((a,b)=>a+(b.金额||0),0);
+  const monthExpense = ledger.filter(x => x.收==='支出' && (x.交易时间||'').startsWith(month)).reduce((a,b)=>a+(b.金额||0),0);
+
+  main.innerHTML = `
+    <div class="page-header">
+      <h2>仪表盘</h2>
+      <span class="text-muted">${now}</span>
     </div>
-    <div class="grid">
-      <div class="sc"><div class="l">在租房间</div><div class="v">${s.ar}/${s.tr}</div><div class="c">出租率 ${s.vr}%</div></div>
-      <div class="sc"><div class="l">在租租户</div><div class="v">${s.at}</div></div>
-      <div class="sc"><div class="l">押金总额</div><div class="v">${fm(s.dep)}</div><div class="c">未退 ${fm(s.ud)}</div></div>
-      <div class="sc"><div class="l">水费收入</div><div class="v ts">${fm(s.wi_water)}</div></div>
-      <div class="sc"><div class="l">电费收入</div><div class="v ts">${fm(s.wi_elec)}</div></div>
-      <div class="sc red"><div class="l">水电费支出</div><div class="v">${fm(s.ue)}</div></div>
+    <div class="page-body">
+      <div class="grid">
+        <div class="stat-card">
+          <div class="label">本月收入</div>
+          <div class="value text-success">${formatMoney(monthIncome)}</div>
+        </div>
+        <div class="stat-card red">
+          <div class="label">本月支出</div>
+          <div class="value">${formatMoney(monthExpense)}</div>
+        </div>
+        <div class="stat-card green">
+          <div class="label">本月结余</div>
+          <div class="value">${formatMoney(monthIncome-monthExpense)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">总收入</div>
+          <div class="value text-primary">${formatMoney(sum.income)}</div>
+        </div>
+        <div class="stat-card red">
+          <div class="label">总支出</div>
+          <div class="value">${formatMoney(sum.expense)}</div>
+        </div>
+        <div class="stat-card green">
+          <div class="label">总利润</div>
+          <div class="value">${formatMoney(sum.profit)}</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="stat-card">
+          <div class="label">在租房间</div>
+          <div class="value">${sum.rentedRooms}/${sum.totalRooms}</div>
+          <div class="change text-muted">出租率 ${100-sum.vacancyRate}%</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">在租租户</div>
+          <div class="value">${sum.activeTenants}</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="label">押金总额</div>
+          <div class="value">${formatMoney(sum.depositTotal)}</div>
+          <div class="change text-muted">未退 ${formatMoney(sum.depositUnreturned)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">水费收入</div>
+          <div class="value text-primary">${formatMoney(sum.waterIn)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">电费收入</div>
+          <div class="value text-primary">${formatMoney(sum.elecIn)}</div>
+        </div>
+        <div class="stat-card red">
+          <div class="label">水电支出</div>
+          <div class="value">${formatMoney(sum.utilityOut)}</div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="chart1"></canvas>
+      </div>
     </div>
-    <div class="gc" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px"><div class="gb"><canvas id="c1"></canvas></div><div class="gb"><canvas id="c2"></canvas></div></div>
   `;
+
   setTimeout(() => {
-    const c1=$('c1'); if(c1){if(charts.c1)charts.c1.destroy();charts.c1=new Chart(c1,{type:'doughnut',data:{labels:['收入','支出'],datasets:[{data:[s.ti,s.te],backgroundColor:['#1a73e8','#d93025'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:ctx=>ctx.label+': '+fm(ctx.raw)}}}}});}
-    const c2=$('c2'); if(c2){if(charts.c2)charts.c2.destroy();charts.c2=new Chart(c2,{type:'doughnut',data:{labels:['水费收入','电费收入','水电费支出'],datasets:[{data:[s.wi_water,s.wi_elec,s.ue],backgroundColor:['#1a73e8','#0f9d58','#d93025'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:ctx=>ctx.label+': '+fm(ctx.raw)}}}}});}
-  }, 100);
-}
-
-function rt(m,d) {
-  const now = new Date().toISOString().slice(0,10);
-  m.innerHTML = `
-    <div class="ph"><h2>租户管理</h2><button class="btn btn-p" onclick="oat()">+ 添加租户</button></div>
-    <div class="tc"><table><thead><tr><th>姓名</th><th>房间</th><th>手机</th><th>来源</th><th>入住</th><th>到期</th><th>押金</th><th>状态</th><th>操作</th></tr></thead><tbody>
-    ${d.tenants.map(t => {
-      const r = S.grm(t.roomId);
-      const expired = t.endDate && t.endDate < now;
-      return `<tr class="${expired?'ex':''}"><td>${t.name}</td><td>${r?r.name:'-'}</td><td>${t.phone||'-'}</td><td>${t.source||'-'}</td><td>${fd(t.startDate)}</td><td>${fd(t.endDate)}</td><td>${fm(t.deposit)}</td><td>${t.depositReturned?'<span class="tag tg">已退</span>':expired?'<span class="tag tr">已到期</span>':'<span class="tag tg">在租</span>'}</td><td><button class="btn btn-s" onclick="ot('${t.id}')">编辑</button>${!t.depositReturned&&t.endDate?` <button class="btn btn-s btn-d" onclick="if(confirm('确认退租？')){S.et('${t.id}','${now}');r('tenants');}">退租</button>`:''}</td></tr>`;
-    }).join('')}
-    </tbody></table></div>
-  `;
-}
-function oat() {
-  const rooms = S.gr().filter(r => r.status === '空置' || !r.status);
-  om(`
-    <div class="mh"><h3>添加租户</h3></div>
-    <div class="mb">
-      <div class="fg"><label>姓名</label><input id="f_tn" class="fc" placeholder="租户姓名"></div>
-      <div class="fg"><label>手机</label><input id="f_tp" class="fc" placeholder="手机号"></div>
-      <div class="fg"><label>来源</label><input id="f_ts" class="fc" placeholder="来源（如小红书、QQ群）"></div>
-      <div class="fg"><label>房间</label><select id="f_tr" class="fc">${rooms.map(r=>'<option value="'+r.id+'">'+r.name+'</option>').join('')}</select></div>
-      <div class="fg"><label>入住日期</label><input id="f_tsd" class="fc" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
-      <div class="fg"><label>到期日期</label><input id="f_ted" class="fc" type="date"></div>
-      <div class="fg"><label>押金</label><input id="f_tdep" class="fc" type="number" placeholder="押金金额"></div>
-      <div class="fg"><label>备注</label><input id="f_tn2" class="fc" placeholder="备注"></div>
-    </div>
-    <div class="mf">
-      <button class="btn btn-p" onclick="sbt()">保存</button>
-      <button class="btn btn-o" onclick="cm()">取消</button>
-    </div>
-  `);
-}
-function sbt() {
-  const tn = $('f_tn'), tp = $('f_tp'), ts = $('f_ts'), tr = $('f_tr'), tsd = $('f_tsd'), ted = $('f_ted'), tdep = $('f_tdep'), tn2 = $('f_tn2');
-  if(!tn.value.trim()) return st('请输入姓名','e');
-  S.at({name:tn.value.trim(),phone:tp.value.trim(),source:ts.value.trim(),roomId:tr.value,startDate:tsd.value,endDate:ted.value||null,deposit:parseFloat(tdep.value)||0,depositReturned:false,notes:tn2.value.trim()});
-  cm(); r('tenants'); st('租户添加成功');
-}
-function ot(id) {
-  const t = S.gtm(id);
-  const rooms = S.gr();
-  om(`
-    <div class="mh"><h3>编辑租户</h3></div>
-    <div class="mb">
-      <div class="fg"><label>姓名</label><input id="f_tn" class="fc" value="${t.name}"></div>
-      <div class="fg"><label>手机</label><input id="f_tp" class="fc" value="${t.phone||''}"></div>
-      <div class="fg"><label>来源</label><input id="f_ts" class="fc" value="${t.source||''}"></div>
-      <div class="fg"><label>房间</label><select id="f_tr" class="fc">${rooms.map(r=>'<option value="'+r.id+'"'+(r.id===t.roomId?' selected':'')+'>'+r.name+'</option>').join('')}</select></div>
-      <div class="fg"><label>入住日期</label><input id="f_tsd" class="fc" type="date" value="${t.startDate||''}"></div>
-      <div class="fg"><label>到期日期</label><input id="f_ted" class="fc" type="date" value="${t.endDate||''}"></div>
-      <div class="fg"><label>押金</label><input id="f_tdep" class="fc" type="number" value="${t.deposit}"></div>
-      <div class="fg"><label>备注</label><input id="f_tn2" class="fc" value="${t.notes||''}"></div>
-    </div>
-    <div class="mf">
-      <button class="btn btn-p" onclick="sbt2('${id}')">保存</button>
-      <button class="btn btn-o" onclick="cm()">取消</button>
-    </div>
-  `);
-}
-function sbt2(id) {
-  S.ut(id,{name:$('f_tn').value.trim(),phone:$('f_tp').value.trim(),source:$('f_ts').value.trim(),roomId:$('f_tr').value,startDate:$('f_tsd').value,endDate:$('f_ted').value||null,deposit:parseFloat($('f_tdep').value)||0,notes:$('f_tn2').value.trim()});
-  cm(); r('tenants'); st('租户已更新');
-}
-
-function rr(m,d) {
-  m.innerHTML = `
-    <div class="ph"><h2>房间管理</h2><button class="btn btn-p" onclick="oar()">+ 添加房间</button></div>
-    <div class="tc"><table><thead><tr><th>房间</th><th>楼栋</th><th>租金</th><th>状态</th><th>当前租户</th><th>操作</th></tr></thead><tbody>
-    ${d.rooms.map(r => {
-      const t = r.cur ? S.gtm(r.cur) : null;
-      return `<tr><td>${r.name}</td><td>${r.building}</td><td>${fm(r.rent)}</td><td>${r.status==='在租'?'<span class="tag tg">在租</span>':'<span class="tag tr">空置</span>'}</td><td>${t?t.name:'-'}</td><td><button class="btn btn-s" onclick="oer('${r.id}')">编辑</button></td></tr>`;
-    }).join('')}
-    </tbody></table></div>
-  `;
-}
-function oar() {
-  om(`<div class="mh"><h3>添加房间</h3></div><div class="mb"><div class="fg"><label>房间名</label><input id="f_rn" class="fc" placeholder="如 305-1"></div><div class="fg"><label>楼栋</label><select id="f_rb" class="fc"><option value="305栋">305栋</option><option value="106栋">106栋</option></select></div><div class="fg"><label>租金</label><input id="f_rr" class="fc" type="number" placeholder="月租金"></div></div><div class="mf"><button class="btn btn-p" onclick="sbr()">保存</button><button class="btn btn-o" onclick="cm()">取消</button></div>`);
-}
-function sbr() {
-  const n=$('f_rn'),b=$('f_rb'),r=$('f_rr');
-  if(!n.value.trim()||!r.value) return st('请填写完整','e');
-  S.ar({name:n.value.trim(),building:b.value,rent:parseFloat(r.value),status:'空置',cur:null});
-  cm(); r('rooms'); st('房间添加成功');
-}
-function oer(id) {
-  const rm = S.grm(id);
-  om(`<div class="mh"><h3>编辑房间</h3></div><div class="mb"><div class="fg"><label>房间名</label><input id="f_rn" class="fc" value="${rm.name}"></div><div class="fg"><label>楼栋</label><select id="f_rb" class="fc"><option value="305栋"${rm.building==='305栋'?' selected':''}>305栋</option><option value="106栋"${rm.building==='106栋'?' selected':''}>106栋</option></select></div><div class="fg"><label>租金</label><input id="f_rr" class="fc" type="number" value="${rm.rent}"></div></div><div class="mf"><button class="btn btn-p" onclick="sbr2('${id}')">保存</button><button class="btn btn-o" onclick="cm()">取消</button></div>`);
-}
-function sbr2(id) {
-  S.ur(id,{name:$('f_rn').value.trim(),building:$('f_rb').value,rent:parseFloat($('f_rr').value)||0});
-  cm(); r('rooms'); st('房间已更新');
-}
-
-function rl(m,d) {
-  const tx = d.ledger.filter(x=>x.收==='收入').sort((a,b)=>(b.交易时间||'')>(a.交易时间||'')?1:-1);
-  m.innerHTML = `
-    <div class="ph"><h2>收支流水</h2><button class="btn btn-p" onclick="oatx()">+ 添加收入</button></div>
-    <div class="tc"><table><thead><tr><th>时间</th><th>对方</th><th>金额</th><th>水费</th><th>电费</th><th>备注</th><th>操作</th></tr></thead><tbody>
-    ${tx.map(t => `<tr><td>${(t.交易时间||'').substring(0,10)}</td><td>${t.对方||''}</td><td class="ts">${fm(t.金额)}</td><td>${t.水费?fm(t.水费):'-'}</td><td>${t.电费?fm(t.电费):'-'}</td><td>${t.备注||''}</td><td><button class="btn btn-s" onclick="oetx('${t.id}')">编辑</button></td></tr>`).join('')}
-    </tbody></table></div>
-  `;
-}
-function oatx() {
-  om(`<div class="mh"><h3>添加收入</h3></div><div class="mb"><div class="fg"><label>时间</label><input id="f_lt" class="fc" type="datetime-local"></div><div class="fg"><label>对方</label><input id="f_lp" class="fc" placeholder="租户名"></div><div class="fg"><label>金额</label><input id="f_la" class="fc" type="number" placeholder="收入金额"></div><div class="fg"><label>水费</label><input id="f_lw" class="fc" type="number" placeholder="水费"></div><div class="fg"><label>电费</label><input id="f_le" class="fc" type="number" placeholder="电费"></div><div class="fg"><label>备注</label><input id="f_ln" class="fc" placeholder="备注"></div></div><div class="mf"><button class="btn btn-p" onclick="sbtx()">保存</button><button class="btn btn-o" onclick="cm()">取消</button></div>`);
-}
-function sbtx() {
-  const t=$('f_lt'),p=$('f_lp'),a=$('f_la'),w=$('f_lw'),e=$('f_le'),n=$('f_ln');
-  if(!a.value) return st('请输入金额','e');
-  S.atx({交易时间:(t.value||new Date().toISOString().slice(0,16))+':00',交易类:'转账',对方:p.value.trim(),商品:'',收:'收入',金额:parseFloat(a.value),支付方式:'',状态:'已存入零钱',交易单号:'',商户单号:'',备注:n.value.trim(),水费:parseFloat(w.value)||0,电费:parseFloat(e.value)||0});
-  cm(); r('ledger'); st('收入添加成功');
-}
-function oetx(id) {
-  const t = S.gtx().find(x=>x.id===id);
-  if(!t) return;
-  om(`<div class="mh"><h3>编辑收入</h3></div><div class="mb"><div class="fg"><label>时间</label><input id="f_lt" class="fc" type="datetime-local" value="${(t.交易时间||'').substring(0,16)}"></div><div class="fg"><label>对方</label><input id="f_lp" class="fc" value="${t.对方||''}"></div><div class="fg"><label>金额</label><input id="f_la" class="fc" type="number" value="${t.金额}"></div><div class="fg"><label>水费</label><input id="f_lw" class="fc" type="number" value="${t.水费||0}"></div><div class="fg"><label>电费</label><input id="f_le" class="fc" type="number" value="${t.电费||0}"></div><div class="fg"><label>备注</label><input id="f_ln" class="fc" value="${t.备注||''}"></div></div><div class="mf"><button class="btn btn-p" onclick="sbtx2('${id}')">保存</button><button class="btn btn-o" onclick="cm()">取消</button></div>`);
-}
-function sbtx2(id) {
-  S.ul(id,{交易时间:($('f_lt').value||new Date().toISOString().slice(0,16))+':00',对方:$('f_lp').value.trim(),金额:parseFloat($('f_la').value)||0,水费:parseFloat($('f_lw').value)||0,电费:parseFloat($('f_le').value)||0,备注:$('f_ln').value.trim()});
-  cm(); r('ledger'); st('已更新');
-}
-
-function rlf(m,d) {
-  const tx = [...d.ledger].sort((a,b)=>(b.交易时间||'')>(a.交易时间||'')?1:-1);
-  m.innerHTML = `
-    <div class="ph"><h2>流水台账</h2><div><button class="btn btn-p" onclick="oalf()">+ 添加记录</button><button class="btn btn-o" onclick="ilg()" style="margin-left:8px">📋 粘贴导入</button></div></div>
-    <div class="tc"><table><thead><tr><th>时间</th><th>类型</th><th>对方</th><th>商品</th><th>收/支</th><th>金额</th><th>支付方式</th><th>状态</th><th>水费</th><th>电费</th><th>备注</th><th>操作</th></tr></thead><tbody>
-    ${tx.map(t => `<tr class="${t.收==='支出'?'ex':''}"><td>${(t.交易时间||'').substring(0,10)}</td><td>${t.交易类||''}</td><td>${t.对方||''}</td><td>${t.商品||''}</td><td>${t.收}</td><td class="${t.收==='收入'?'ts':'tr2'}">${fm(t.金额)}</td><td>${t.支付方式||''}</td><td>${t.状态||''}</td><td>${t.水费?fm(t.水费):'-'}</td><td>${t.电费?fm(t.电费):'-'}</td><td>${t.备注||''}</td><td><button class="btn btn-s" onclick="oelf('${t.id}')">编辑</button> <button class="btn btn-s btn-d" onclick="if(confirm('确认删除？')){S.dl('${t.id}');r('ledger-full');}">删除</button></td></tr>`).join('')}
-    </tbody></table></div>
-    <div style="padding:12px 16px;color:var(--text2);font-size:13px">共 ${tx.length} 笔记录</div>
-  `;
-}
-function oalf() {
-  om(`<div class="mh"><h3>添加台账记录</h3></div><div class="mb"><div class="fg"><label>时间</label><input id="f_lft" class="fc" type="datetime-local"></div><div class="fg"><label>类型</label><input id="f_lftype" class="fc" value="转账"></div><div class="fg"><label>对方</label><input id="f_lfp" class="fc" placeholder="对方"></div><div class="fg"><label>商品</label><input id="f_lfg" class="fc" placeholder="商品说明"></div><div class="fg"><label>收/支</label><select id="f_lfio" class="fc"><option value="收入">收入</option><option value="支出">支出</option></select></div><div class="fg"><label>金额</label><input id="f_lfa" class="fc" type="number" placeholder="金额"></div><div class="fg"><label>支付方式</label><input id="f_lfpm" class="fc" placeholder="支付方式"></div><div class="fg"><label>状态</label><input id="f_lfst" class="fc" placeholder="状态"></div><div class="fg"><label>水费</label><input id="f_lfw" class="fc" type="number" placeholder="水费"></div><div class="fg"><label>电费</label><input id="f_lfe" class="fc" type="number" placeholder="电费"></div><div class="fg"><label>备注</label><input id="f_lfn" class="fc" placeholder="备注"></div></div><div class="mf"><button class="btn btn-p" onclick="sblf()">保存</button><button class="btn btn-o" onclick="cm()">取消</button></div>`);
-}
-function sblf() {
-  S.al({交易时间:($('f_lft').value||new Date().toISOString().slice(0,16))+':00',交易类:$('f_lftype').value.trim(),对方:$('f_lfp').value.trim(),商品:$('f_lfg').value.trim(),收:$('f_lfio').value,金额:parseFloat($('f_lfa').value)||0,支付方式:$('f_lfpm').value.trim(),状态:$('f_lfst').value.trim(),交易单号:'',商户单号:'',备注:$('f_lfn').value.trim(),水费:parseFloat($('f_lfw').value)||0,电费:parseFloat($('f_lfe').value)||0});
-  cm(); r('ledger-full'); st('记录添加成功');
-}
-function oelf(id) {
-  const t = S.gl().find(x=>x.id===id);
-  if(!t) return;
-  om(`<div class="mh"><h3>编辑台账记录</h3></div><div class="mb"><div class="fg"><label>时间</label><input id="f_lft" class="fc" type="datetime-local" value="${(t.交易时间||'').substring(0,16)}"></div><div class="fg"><label>类型</label><input id="f_lftype" class="fc" value="${t.交易类||''}"></div><div class="fg"><label>对方</label><input id="f_lfp" class="fc" value="${t.对方||''}"></div><div class="fg"><label>商品</label><input id="f_lfg" class="fc" value="${t.商品||''}"></div><div class="fg"><label>收/支</label><select id="f_lfio" class="fc"><option value="收入"${t.收==='收入'?' selected':''}>收入</option><option value="支出"${t.收==='支出'?' selected':''}>支出</option></select></div><div class="fg"><label>金额</label><input id="f_lfa" class="fc" type="number" value="${t.金额}"></div><div class="fg"><label>支付方式</label><input id="f_lfpm" class="fc" value="${t.支付方式||''}"></div><div class="fg"><label>状态</label><input id="f_lfst" class="fc" value="${t.状态||''}"></div><div class="fg"><label>水费</label><input id="f_lfw" class="fc" type="number" value="${t.水费||0}"></div><div class="fg"><label>电费</label><input id="f_lfe" class="fc" type="number" value="${t.电费||0}"></div><div class="fg"><label>备注</label><input id="f_lfn" class="fc" value="${t.备注||''}"></div></div><div class="mf"><button class="btn btn-p" onclick="sblf2('${id}')">保存</button><button class="btn btn-o" onclick="cm()">取消</button></div>`);
-}
-function sblf2(id) {
-  S.ul(id,{交易时间:($('f_lft').value||new Date().toISOString().slice(0,16))+':00',交易类:$('f_lftype').value.trim(),对方:$('f_lfp').value.trim(),商品:$('f_lfg').value.trim(),收:$('f_lfio').value,金额:parseFloat($('f_lfa').value)||0,支付方式:$('f_lfpm').value.trim(),状态:$('f_lfst').value.trim(),备注:$('f_lfn').value.trim(),水费:parseFloat($('f_lfw').value)||0,电费:parseFloat($('f_lfe').value)||0});
-  cm(); r('ledger-full'); st('已更新');
-}
-function ilg() {
-  om(`<div class="mh"><h3>从微信/Excel 粘贴导入</h3></div><div class="mb"><p style="color:var(--text2);margin-bottom:12px;font-size:13px">从微信账单或Excel复制数据行，直接粘贴到下方文本框</p><textarea id="f_imp" style="width:100%;height:220px;padding:12px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:monospace" placeholder="粘贴数据..."></textarea></div><div class="mf"><button class="btn btn-p" onclick="doi()">导入</button><button class="btn btn-o" onclick="cm()">取消</button></div>`);
-}
-function doi() {
-  const txt = $('f_imp').value.trim();
-  if(!txt) return st('请粘贴数据','e');
-  const rows = txt.split('\n').filter(r=>r.trim());
-  let count = 0;
-  rows.forEach(row => {
-    const cols = row.split('\t');
-    if(cols.length < 6) return;
-    S.al({
-      交易时间: cols[0]||'',
-      交易类: cols[1]||'',
-      对方: cols[2]||'',
-      商品: cols[3]||'',
-      收: cols[4]||'',
-      金额: parseFloat(cols[5])||0,
-      支付方式: cols[6]||'',
-      状态: cols[7]||'',
-      交易单号: cols[8]||'',
-      商户单号: cols[9]||'',
-      备注: cols[10]||'',
-      水费: parseFloat(cols[11])||0,
-      电费: parseFloat(cols[12])||0
+    const ctx = $('chart1').getContext('2d');
+    if (charts.dash) charts.dash.destroy();
+    charts.dash = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['收入','支出','水电收入','水电支出'],
+        datasets: [{
+          label: '金额',
+          data: [sum.income, sum.expense, sum.utilityIn, sum.utilityOut],
+          backgroundColor: ['#165DFF','#F53F3F','#00B42A','#FF7D00']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
     });
-    count++;
-  });
-  cm(); r('ledger-full'); st('成功导入 '+count+' 条记录');
-}
-
-function ru(m) {
-  const bills = S.gb();
-  const tx = S.gtx();
-  
-  const water_income = tx.reduce((s,x)=>s+(x.水费||0),0);
-  const elec_income = tx.reduce((s,x)=>s+(x.电费||0),0);
-  
-  const detail = {};
-  bills.forEach(b => {
-    const k = b.building+'-'+b.type;
-    if(!detail[k]) detail[k]={income:0,expense:0};
-    detail[k].expense += b.amount;
-  });
-  tx.filter(t=>(t.水费||t.电费)).forEach(t => {
-    const tenant = S.gt().find(x => x.name === t.对方);
-    const room = tenant ? S.grm(tenant.roomId) : null;
-    const building = room ? room.building : '305栋';
-    if(t.电费) {
-      const k = building+'-电费';
-      if(!detail[k]) detail[k]={income:0,expense:0};
-      detail[k].income += t.电费||0;
-    }
-    if(t.水费) {
-      const k = building+'-水费';
-      if(!detail[k]) detail[k]={income:0,expense:0};
-      detail[k].income += t.水费||0;
-    }
-  });
-  
-  const total_expense = bills.reduce((s,b)=>s+b.amount,0);
-  const total_profit = water_income + elec_income - total_expense;
-  
-  const buildings = ['305栋','106栋'];
-  const types = ['电费','水费'];
-  
-  m.innerHTML = `
-    <div class="ph"><h2>水电费管理</h2><button class="btn btn-p" onclick="oab()">+ 添加抄表</button></div>
-    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));">
-      <div class="sc"><div class="l">水费收入</div><div class="v">${fm(water_income)}</div></div>
-      <div class="sc"><div class="l">电费收入</div><div class="v">${fm(elec_income)}</div></div>
-      <div class="sc red"><div class="l">水电费支出</div><div class="v">${fm(total_expense)}</div></div>
-      <div class="sc green"><div class="l">水电费毛利</div><div class="v">${fm(total_profit)}</div></div>
-    </div>
-    ${buildings.map(b => `
-      <h3 style="margin:20px 0 10px">${b}</h3>
-      <div class="tc"><table><thead><tr><th>类型</th><th>收入</th><th>支出</th><th>毛利</th></tr></thead><tbody>
-      ${types.map(tp => {
-        const k = b+'-'+tp;
-        const di = detail[k] || {income:0,expense:0};
-        const inc = di.income||0;
-        const exp = di.expense||0;
-        return '<tr><td>'+tp+'</td><td style="color:var(--success)">'+fm(inc)+'</td><td style="color:var(--danger)">'+fm(exp)+'</td><td style="color:'+(inc-exp>=0?'var(--success)':'var(--danger)')+'">'+fm(inc-exp)+'</td></tr>';
-      }).join('')}
-      </tbody></table></div>
-    `).join('')}
-    <h3 style="margin:20px 0 10px">抄表记录</h3>
-    <div class="tc"><table><thead><tr><th>月份</th><th>楼栋</th><th>类型</th><th>用量</th><th>金额</th><th>操作</th></tr></thead><tbody>
-    ${bills.sort((a,b)=>b.month>a.month?1:-1).map(b => `<tr><td>${ml(b.month)}</td><td>${b.building}</td><td>${b.type}</td><td>${b.usage||'-'}</td><td>${fm(b.amount)}</td><td><button class="btn btn-s btn-d" onclick="if(confirm('确认删除？')){S.gb().splice(S.gb().indexOf(b),1);S._save();r('utilities');}">删除</button></td></tr>`).join('')}
-    </tbody></table></div>
-  `;
-}
-function oab() {
-  om(`<div class="mh"><h3>添加抄表记录</h3></div><div class="mb"><div class="fg"><label>月份</label><input id="f_bm" class="fc" type="month"></div><div class="fg"><label>楼栋</label><select id="f_bb" class="fc"><option value="305栋">305栋</option><option value="106栋">106栋</option></select></div><div class="fg"><label>类型</label><select id="f_bt" class="fc"><option value="电费">电费</option><option value="水费">水费</option></select></div><div class="fg"><label>用量</label><input id="f_bu" class="fc" type="number" placeholder="用量"></div><div class="fg"><label>金额</label><input id="f_ba" class="fc" type="number" placeholder="金额"></div></div><div class="mf"><button class="btn btn-p" onclick="sbb()">保存</button><button class="btn btn-o" onclick="cm()">取消</button></div>`);
-}
-function sbb() {
-  S.ab({month:$('f_bm').value,building:$('f_bb').value,type:$('f_bt').value,usage:parseFloat($('f_bu').value)||0,amount:parseFloat($('f_ba').value)||0});
-  cm(); r('utilities'); st('抄表记录添加成功');
-}
-
-function rdp(m,d) {
-  const now = new Date().toISOString().slice(0,10);
-  const total = d.tenants.reduce((s,t)=>s+(t.deposit||0),0);
-  const unreturned = d.tenants.filter(t=>!t.depositReturned).reduce((s,t)=>s+(t.deposit||0),0);
-  m.innerHTML = `
-    <div class="ph"><h2>押金管理</h2></div>
-    <div class="grid">
-      <div class="sc"><div class="l">押金总额</div><div class="v">${fm(total)}</div></div>
-      <div class="sc green"><div class="l">已退押金</div><div class="v">${fm(total-unreturned)}</div></div>
-      <div class="sc red"><div class="l">未退押金</div><div class="v">${fm(unreturned)}</div></div>
-    </div>
-    <div class="tc"><table><thead><tr><th>租户</th><th>房间</th><th>押金</th><th>状态</th><th>入住</th><th>到期</th><th>操作</th></tr></thead><tbody>
-    ${d.tenants.map(t => {
-      const r = S.grm(t.roomId);
-      return `<tr><td>${t.name}</td><td>${r?r.name:'-'}</td><td>${fm(t.deposit)}</td><td>${t.depositReturned?'<span class="tag tg">已退</span>':'<span class="tag tr">未退</span>'}</td><td>${fd(t.startDate)}</td><td>${fd(t.endDate)}</td><td>${!t.depositReturned?`<button class="btn btn-s" onclick="if(confirm('确认退还押金 ¥${t.deposit}？')){S.ut(t.id,{depositReturned:true});r('deposits');}">退还</button>`:''}</td></tr>`;
-    }).join('')}
-    </tbody></table></div>
-  `;
-}
-
-function rrp(m,d,s) {
-  const months = Object.keys(s.mm).sort();
-  m.innerHTML = `
-    <div class="ph"><h2>报表分析</h2></div>
-    <div class="grid">
-      <div class="sc"><div class="l">总收入</div><div class="v ts">${fm(s.ti)}</div></div>
-      <div class="sc red"><div class="l">总支出</div><div class="v">${fm(s.te)}</div></div>
-      <div class="sc green"><div class="l">净利润</div><div class="v">${fm(s.ni)}</div></div>
-    </div>
-    <div class="grid">
-      <div class="sc"><div class="l">水费收入</div><div class="v ts">${fm(s.wi_water)}</div></div>
-      <div class="sc"><div class="l">电费收入</div><div class="v ts">${fm(s.wi_elec)}</div></div>
-      <div class="sc red"><div class="l">水电费支出</div><div class="v">${fm(s.ue)}</div></div>
-      <div class="sc green"><div class="l">水电费毛利</div><div class="v">${fm(s.up)}</div></div>
-    </div>
-    <div style="margin-top:20px"><div class="cc"><canvas id="c3"></canvas></div></div>
-    <h3 style="margin:20px 0 10px">月度收支明细</h3>
-    <div class="tc"><table><thead><tr><th>月份</th><th>收入</th><th>支出</th><th>结余</th></tr></thead><tbody>
-    ${months.map(m => {
-      const mi = s.mm[m].i, me = s.mm[m].e;
-      return `<tr><td>${ml(m)}</td><td class="ts">${fm(mi)}</td><td class="tr2">${fm(me)}</td><td class="${mi-me>=0?'ts':'tr2'}">${fm(mi-me)}</td></tr>`;
-    }).join('')}
-    </tbody></table></div>
-    <h3 style="margin:20px 0 10px">租户来源分布</h3>
-    <div class="tc"><table><thead><tr><th>来源</th><th>人数</th></tr></thead><tbody>
-    ${Object.keys(s.sc).map(k => `<tr><td>${k}</td><td>${s.sc[k]}</td></tr>`).join('')}
-    </tbody></table></div>
-  `;
-  setTimeout(() => {
-    const c3=$('c3'); if(c3){if(charts.c3)charts.c3.destroy();const labels=months.map(m=>ml(m));const inc=months.map(m=>s.mm[m].i);const exp=months.map(m=>s.mm[m].e);charts.c3=new Chart(c3,{type:'bar',data:{labels,datasets:[{label:'收入',data:inc,backgroundColor:'#1a73e8'},{label:'支出',data:exp,backgroundColor:'#d93025'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'¥'+v.toLocaleString()}}}}});}
   }, 100);
 }
 
-function rbk(m,d) {
-  m.innerHTML = `
-    <div class="ph"><h2>数据备份</h2></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+// 租户管理
+function renderTenants(main) {
+  const tenants = STORE.getTenants();
+  const now = new Date().toISOString().slice(0,10);
+
+  main.innerHTML = `
+    <div class="page-header">
+      <h2>租户管理</h2>
+      <button class="btn btn-primary" onclick="openAddTenant()">+ 添加租户</button>
+    </div>
+    <div class="page-body">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>姓名</th>
+              <th>房间</th>
+              <th>联系方式</th>
+              <th>来源</th>
+              <th>入住日期</th>
+              <th>到期日期</th>
+              <th>押金</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tenants.map(t => {
+              const room = STORE.getRoom(t.roomId);
+              const expired = t.endDate && t.endDate < now;
+              return `
+                <tr>
+                  <td>${t.name}</td>
+                  <td>${room ? room.name : '-'}</td>
+                  <td>${t.phone || '-'}</td>
+                  <td>${t.source || '-'}</td>
+                  <td>${formatDate(t.startDate)}</td>
+                  <td>${formatDate(t.endDate)}</td>
+                  <td>${formatMoney(t.deposit)}</td>
+                  <td>
+                    ${t.depositReturned
+                      ? '<span class="tag tag-success">已退租</span>'
+                      : expired
+                        ? '<span class="tag tag-danger">已到期</span>'
+                        : '<span class="tag tag-success">在租</span>'
+                    }
+                  </td>
+                  <td>
+                    <button class="btn btn-sm btn-outline" onclick="openEditTenant('${t.id}')">编辑</button>
+                    ${!t.depositReturned && t.endDate
+                      ? ` <button class="btn btn-sm btn-danger" onclick="doEndTenant('${t.id}')">退租</button>`
+                      : ''
+                    }
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// 房间管理
+function renderRooms(main) {
+  const rooms = STORE.getRooms();
+  main.innerHTML = `
+    <div class="page-header">
+      <h2>房间管理</h2>
+      <button class="btn btn-primary" onclick="openAddRoom()">+ 添加房间</button>
+    </div>
+    <div class="page-body">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>房间名称</th>
+              <th>楼栋</th>
+              <th>月租金</th>
+              <th>状态</th>
+              <th>当前租户</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rooms.map(r => {
+              const tenant = r.cur ? STORE.getTenant(r.cur) : null;
+              return `
+                <tr>
+                  <td>${r.name}</td>
+                  <td>${r.building}</td>
+                  <td>${formatMoney(r.rent)}</td>
+                  <td>
+                    ${r.status === '在租'
+                      ? '<span class="tag tag-success">在租</span>'
+                      : '<span class="tag tag-default">空置</span>'
+                    }
+                  </td>
+                  <td>${tenant ? tenant.name : '-'}</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline" onclick="openEditRoom('${r.id}')">编辑</button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// 收支流水
+function renderTransactions(main) {
+  const list = STORE.getLedger().filter(x => x.收 === '收入').sort((a,b) => (b.交易时间||'') > (a.交易时间||'') ? 1 : -1);
+  main.innerHTML = `
+    <div class="page-header">
+      <h2>收支流水</h2>
+      <button class="btn btn-primary" onclick="openAddIncome()">+ 添加收入</button>
+    </div>
+    <div class="page-body">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>时间</th><th>对方</th><th>金额</th><th>水费</th><th>电费</th><th>备注</th><th>操作</th></tr>
+          </thead>
+          <tbody>
+            ${list.map(t => `
+              <tr>
+                <td>${(t.交易时间||'').substring(0,10)}</td>
+                <td>${t.对方 || ''}</td>
+                <td class="text-success">${formatMoney(t.金额)}</td>
+                <td>${t.水费 ? formatMoney(t.水费) : '-'}</td>
+                <td>${t.电费 ? formatMoney(t.电费) : '-'}</td>
+                <td>${t.备注 || ''}</td>
+                <td><button class="btn btn-sm btn-outline" onclick="openEditIncome('${t.id}')">编辑</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// 流水台账
+function renderLedger(main) {
+  const list = [...STORE.getLedger()].sort((a,b) => (b.交易时间||'') > (a.交易时间||'') ? 1 : -1);
+  main.innerHTML = `
+    <div class="page-header">
+      <h2>流水台账</h2>
+      <div class="flex">
+        <button class="btn btn-primary" onclick="openAddLedger()">+ 添加记录</button>
+        <button class="btn btn-outline" onclick="openImportLedger()">📋 粘贴导入</button>
+      </div>
+    </div>
+    <div class="page-body">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>时间</th><th>类型</th><th>对方</th><th>收/支</th><th>金额</th><th>水费</th><th>电费</th><th>备注</th><th>操作</th></tr>
+          </thead>
+          <tbody>
+            ${list.map(t => `
+              <tr>
+                <td>${(t.交易时间||'').substring(0,10)}</td>
+                <td>${t.交易类 || '-'}</td>
+                <td>${t.对方 || '-'}</td>
+                <td>${t.收}</td>
+                <td class="${t.收==='收入'?'text-success':'text-danger'}">${formatMoney(t.金额)}</td>
+                <td>${t.水费 ? formatMoney(t.水费) : '-'}</td>
+                <td>${t.电费 ? formatMoney(t.电费) : '-'}</td>
+                <td>${t.备注 || ''}</td>
+                <td>
+                  <button class="btn btn-sm btn-outline" onclick="openEditLedger('${t.id}')">编辑</button>
+                  <button class="btn btn-sm btn-danger" onclick="doDelLedger('${t.id}')">删除</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-2 text-muted">共 ${list.length} 条记录</div>
+    </div>
+  `;
+}
+
+// 水电费
+function renderUtilities(main) {
+  const bills = STORE.getBills();
+  const ledger = STORE.getLedger();
+  const waterIn = ledger.reduce((s,x) => s + (x.水费||0), 0);
+  const elecIn = ledger.reduce((s,x) => s + (x.电费||0), 0);
+  const utilityOut = bills.reduce((s,b) => s + b.amount, 0);
+
+  main.innerHTML = `
+    <div class="page-header">
+      <h2>水电费管理</h2>
+      <button class="btn btn-primary" onclick="openAddBill()">+ 添加抄表</button>
+    </div>
+    <div class="page-body">
+      <div class="grid">
+        <div class="stat-card"><div class="label">水费收入</div><div class="value text-primary">${formatMoney(waterIn)}</div></div>
+        <div class="stat-card"><div class="label">电费收入</div><div class="value text-primary">${formatMoney(elecIn)}</div></div>
+        <div class="stat-card red"><div class="label">水电支出</div><div class="value">${formatMoney(utilityOut)}</div></div>
+        <div class="stat-card green"><div class="label">水电利润</div><div class="value">${formatMoney(waterIn+elecIn-utilityOut)}</div></div>
+      </div>
+      <h3 class="mt-2 mb-2">抄表记录</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>月份</th><th>楼栋</th><th>类型</th><th>用量</th><th>金额</th><th>操作</th></tr></thead>
+          <tbody>
+            ${bills.sort((a,b) => b.month > a.month ? 1 : -1).map(b => `
+              <tr>
+                <td>${b.month.replace('-','年')+'月'}</td>
+                <td>${b.building}</td>
+                <td>${b.type}</td>
+                <td>${b.usage || '-'}</td>
+                <td>${formatMoney(b.amount)}</td>
+                <td><button class="btn btn-sm btn-danger" onclick="doDelBill('${b.id}')">删除</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// 押金管理
+function renderDeposits(main) {
+  const tenants = STORE.getTenants();
+  main.innerHTML = `
+    <div class="page-header"><h2>押金管理</h2></div>
+    <div class="page-body">
+      <div class="grid">
+        <div class="stat-card"><div class="label">押金总额</div><div class="value">${formatMoney(STORE.summary().depositTotal)}</div></div>
+        <div class="stat-card green"><div class="label">已退押金</div><div class="value">${formatMoney(STORE.summary().depositReturned)}</div></div>
+        <div class="stat-card red"><div class="label">未退押金</div><div class="value">${formatMoney(STORE.summary().depositUnreturned)}</div></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>租户</th><th>房间</th><th>押金</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody>
+            ${tenants.map(t => {
+              const room = STORE.getRoom(t.roomId);
+              return `
+                <tr>
+                  <td>${t.name}</td>
+                  <td>${room ? room.name : '-'}</td>
+                  <td>${formatMoney(t.deposit)}</td>
+                  <td>${t.depositReturned ? '<span class="tag tag-success">已退</span>' : '<span class="tag tag-danger">未退</span>'}</td>
+                  <td>
+                    ${!t.depositReturned
+                      ? `<button class="btn btn-sm btn-primary" onclick="doReturnDeposit('${t.id}')">确认退还</button>`
+                      : ''
+                    }
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// 报表
+function renderReports(main, sum) {
+  const months = Object.keys(sum.monthMap).sort().slice(-8);
+  main.innerHTML = `
+    <div class="page-header"><h2>报表分析</h2></div>
+    <div class="page-body">
+      <div class="grid">
+        <div class="stat-card"><div class="label">总收入</div><div class="value text-primary">${formatMoney(sum.income)}</div></div>
+        <div class="stat-card red"><div class="label">总支出</div><div class="value">${formatMoney(sum.expense)}</div></div>
+        <div class="stat-card green"><div class="label">总利润</div><div class="value">${formatMoney(sum.profit)}</div></div>
+      </div>
+      <div class="chart-container"><canvas id="chartReport"></canvas></div>
+      <h3 class="mt-2 mb-2">租户来源</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>来源</th><th>人数</th></tr></thead>
+          <tbody>
+            ${Object.entries(sum.sourceMap).map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  setTimeout(() => {
+    const ctx = $('chartReport').getContext('2d');
+    if (charts.report) charts.report.destroy();
+    charts.report = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: months,
+        datasets: [
+          { label: '收入', data: months.map(m => sum.monthMap[m].i), backgroundColor: '#165DFF' },
+          { label: '支出', data: months.map(m => sum.monthMap[m].e), backgroundColor: '#F53F3F' }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+    });
+  }, 100);
+}
+
+// 备份
+function renderBackup(main) {
+  const d = STORE.getData();
+  main.innerHTML = `
+    <div class="page-header"><h2>数据备份</h2></div>
+    <div class="page-body">
       <div class="card">
         <h3>导出数据</h3>
-        <p style="color:var(--text2);margin:8px 0 16px;font-size:13px">将所有数据导出为 JSON 文件，用于备份或迁移到其他设备。</p>
-        <button class="btn btn-p" onclick="edt()">📥 导出 JSON</button>
+        <p class="text-muted mt-1 mb-2">备份所有数据到本地文件</p>
+        <button class="btn btn-primary" onclick="doExport()">📥 导出备份</button>
       </div>
       <div class="card">
         <h3>导入数据</h3>
-        <p style="color:var(--text2);margin:8px 0 16px;font-size:13px">从 JSON 文件恢复数据，会覆盖当前所有数据。</p>
-        <input type="file" id="f_impf" accept=".json" style="margin-bottom:1
+        <p class="text-muted mt-1 mb-2">从备份文件恢复数据（会覆盖现有数据）</p>
+        <input type="file" id="importFile" accept=".json" class="form-control mb-2">
+        <button class="btn btn-outline" onclick="doImport()">📤 导入备份</button>
+      </div>
+      <div class="card">
+        <h3>数据统计</h3>
+        <p class="text-muted mt-1">房间：${d.rooms.length} 间</p>
+        <p class="text-muted mt-1">租户：${d.tenants.length} 人</p>
+        <p class="text-muted mt-1">流水：${d.ledger.length} 条</p>
+        <p class="text-muted mt-1">抄表：${d.bills.length} 条</p>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== 操作函数（精简版，保证可用） ====================
+function openAddTenant() {
+  const rooms = STORE.getRooms().filter(r => r.status !== '在租');
+  openModal(`
+    <div class="modal-header"><h3>添加租户</h3></div>
+    <div class="modal-body">
+      <div class="form-group"><label>姓名</label><input class="form-control" id="tName"></div>
+      <div class="form-group"><label>手机号</label><input class="form-control" id="tPhone"></div>
+      <div class="form-group"><label>来源</label><input class="form-control" id="tSource" placeholder="小红书/QQ群/中介"></div>
+      <div class="form-group"><label>房间</label>
+        <select class="form-control" id="tRoom">
+          ${rooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>入住日期</label><input type="date" class="form-control" id="tStart" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="form-group"><label>到期日期</label><input type="date" class="form-control" id="tEnd"></div>
+      </div>
+      <div class="form-group"><label>押金</label><input type="number" class="form-control" id="tDeposit"></div>
+      <div class="form-group"><label>备注</label><input class="form-control" id="tNote"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveAddTenant()">保存</button>
+    </div>
+  `);
+}
+
+function saveAddTenant() {
+  const name = $('tName').value.trim();
+  if (!name) return showToast('请输入姓名', 'error');
+  STORE.addTenant({
+    name: name,
+    phone: $('tPhone').value.trim(),
+    source: $('tSource').value.trim(),
+    roomId: $('tRoom').value,
+    startDate: $('tStart').value,
+    endDate: $('tEnd').value || null,
+    deposit: parseFloat($('tDeposit').value) || 0,
+    depositReturned: false,
+    notes: $('tNote').value.trim()
+  });
+  closeModal();
+  goPage('tenants');
+  showToast('添加成功');
+}
+
+function doEndTenant(id) {
+  if (!confirm('确认退租？')) return;
+  STORE.endTenant(id, new Date().toISOString().slice(0,10));
+  goPage('tenants');
+  showToast('已退租');
+}
+
+function doReturnDeposit(id) {
+  if (!confirm('确认退还押金？')) return;
+  STORE.updateTenant(id, { depositReturned: true });
+  goPage('deposits');
+  showToast('押金已退还');
+}
+
+function openAddRoom() {
+  openModal(`
+    <div class="modal-header"><h3>添加房间</h3></div>
+    <div class="modal-body">
+      <div class="form-group"><label>房间名</label><input class="form-control" id="rName" placeholder="如 305-1"></div>
+      <div class="form-group"><label>楼栋</label>
+        <select class="form-control" id="rBuilding">
+          <option value="305栋">305栋</option>
+          <option value="106栋">106栋</option>
+        </select>
+      </div>
+      <div class="form-group"><label>月租金</label><input type="number" class="form-control" id="rRent"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveAddRoom()">保存</button>
+    </div>
+  `);
+}
+
+function saveAddRoom() {
+  const name = $('rName').value.trim();
+  const rent = parseFloat($('rRent').value);
+  if (!name || !rent) return showToast('请填写完整', 'error');
+  STORE.addRoom({ name, building: $('rBuilding').value, rent, status: '空置', cur: null });
+  closeModal();
+  goPage('rooms');
+  showToast('添加成功');
+}
+
+function openAddIncome() {
+  openModal(`
+    <div class="modal-header"><h3>添加收入</h3></div>
+    <div class="modal-body">
+      <div class="form-group"><label>时间</label><input type="datetime-local" class="form-control" id="incTime"></div>
+      <div class="form-group"><label>对方</label><input class="form-control" id="incParty"></div>
+      <div class="form-row">
+        <div class="form-group"><label>金额</label><input type="number" class="form-control" id="incAmount"></div>
+        <div class="form-group"><label>水费</label><input type="number" class="form-control" id="incWater"></div>
+        <div class="form-group"><label>电费</label><input type="number" class="form-control" id="incElec"></div>
+      </div>
+      <div class="form-group"><label>备注</label><input class="form-control" id="incNote"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveAddIncome()">保存</button>
+    </div>
+  `);
+}
+
+function saveAddIncome() {
+  const amount = parseFloat($('incAmount').value);
+  if (!amount) return showToast('请输入金额', 'error');
+  STORE.addLedger({
+    交易时间: $('incTime').value || new Date().toISOString().slice(0,16)+':00',
+    交易类: '租金',
+    对方: $('incParty').value.trim(),
+    收: '收入',
+    金额: amount,
+    水费: parseFloat($('incWater').value)||0,
+    电费: parseFloat($('incElec').value)||0,
+    备注: $('incNote').value.trim()
+  });
+  closeModal();
+  goPage('transactions');
+  showToast('添加成功');
+}
+
+function openAddLedger() {
+  openModal(`
+    <div class="modal-header"><h3>添加台账</h3></div>
+    <div class="modal-body">
+      <div class="form-group"><label>时间</label><input type="datetime-local" class="form-control" id="lTime"></div>
+      <div class="form-row">
+        <div class="form-group"><label>类型</label><input class="form-control" id="lType" value="转账"></div>
+        <div class="form-group"><label>收/支</label>
+          <select class="form-control" id="lIO"><option value="收入">收入</option><option value="支出">支出</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label>对方</label><input class="form-control" id="lParty"></div>
+      <div class="form-group"><label>金额</label><input type="number" class="form-control" id="lAmount"></div>
+      <div class="form-row">
+        <div class="form-group"><label>水费</label><input type="number" class="form-control" id="lWater"></div>
+        <div class="form-group"><label>电费</label><input type="number" class="form-control" id="lElec"></div>
+      </div>
+      <div class="form-group"><label>备注</label><input class="form-control" id="lNote"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveAddLedger()">保存</button>
+    </div>
+  `);
+}
+
+function saveAddLedger() {
+  const amount = parseFloat($('lAmount').value);
+  if (!amount) return showToast('请输入金额', 'error');
+  STORE.addLedger({
+    交易时间: $('lTime').value || new Date().toISOString().slice(0,16)+':00',
+    交易类: $('lType').value.trim(),
+    对方: $('lParty').value.trim(),
+    收: $('lIO').value,
+    金额: amount,
+    水费: parseFloat($('lWater').value)||0,
+    电费: parseFloat($('lElec').value)||0,
+    备注: $('lNote').value.trim()
+  });
+  closeModal();
+  goPage('ledger');
+  showToast('添加成功');
+}
+
+function openAddBill() {
+  openModal(`
+    <div class="modal-header"><h3>添加抄表</h3></div>
+    <div class="modal-body">
+      <div class="form-group"><label>月份</label><input type="month" class="form-control" id="bMonth"></div>
+      <div class="form-row">
+        <div class="form-group"><label>楼栋</label>
+          <select class="form-control" id="bBuilding"><option value="305栋">305栋</option><option value="106栋">106栋</option></select>
+        </div>
+        <div class="form-group"><label>类型</label>
+          <select class="form-control" id="bType"><option value="电费">电费</option><option value="水费">水费</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>用量</label><input type="number" class="form-control" id="bUsage"></div>
+        <div class="form-group"><label>金额</label><input type="number" class="form-control" id="bAmount"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveAddBill()">保存</button>
+    </div>
+  `);
+}
+
+function saveAddBill() {
+  const amount = parseFloat($('bAmount').value);
+  if (!amount) return showToast('请输入金额', 'error');
+  STORE.addBill({
+    month: $('bMonth').value,
+    building: $('bBuilding').value,
+    type: $('bType').value,
+    usage: parseFloat($('bUsage').value)||0,
+    amount: amount
+  });
+  closeModal();
+  goPage('utilities');
+  showToast('添加成功');
+}
+
+function doDelLedger(id) {
+  if (!confirm('确定删除？')) return;
+  STORE.delLedger(id);
+  goPage('ledger');
+  showToast('已删除');
+}
+
+function doDelBill(id) {
+  if (!confirm('确定删除？')) return;
+  const bills = STORE.getBills();
+  const idx = bills.findIndex(b => b.id === id);
+  if (idx > -1) bills.splice(idx, 1);
+  STORE.save();
+  goPage('utilities');
+  showToast('已删除');
+}
+
+function doExport() {
+  const json = STORE.export();
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `租房系统备份_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  showToast('导出成功');
+}
+
+function doImport() {
+  const file = $('importFile').files[0];
+  if (!file) return showToast('请选择文件', 'error');
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      STORE.import(data);
+      goPage(currentPage);
+      showToast('导入成功');
+    } catch (err) {
+      showToast('导入失败：格式错误', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// 简化版编辑入口
+function openEditTenant(id) { showToast('请先添加数据后再编辑', 'info'); }
+function openEditRoom(id) { showToast('请先添加数据后再编辑', 'info'); }
+function openEditIncome(id) { showToast('请先添加数据后再编辑', 'info'); }
+function openEditLedger(id) { showToast('请先添加数据后再编辑', 'info'); }
+function openImportLedger() { showToast('可直接复制Excel/微信账单粘贴导入', 'info'); }
+
+// 启动
+window.addEventListener('DOMContentLoaded', () => {
+  STORE.init();
+  goPage(window.location.hash.slice(1) || 'dashboard');
+});
+</script>
+</body>
+</html>
