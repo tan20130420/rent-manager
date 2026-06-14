@@ -285,14 +285,11 @@ const S = {
   _save() { 
     localStorage.setItem('rentData', JSON.stringify(this._d));
     // 异步上传到 GitHub（不阻塞 UI）
-    // 使用ASCII安全序列化，避免中文乱码
     if (ENABLE_CLOUD_SYNC && WORKER_URL) {
       fetch(WORKER_URL + '/api/data', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this._d).replace(/[\u0080-\uffff]/g, function(c) {
-          return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);
-        })
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify(this._d)
       }).catch(e => console.log('Cloud sync failed:', e.message));
     }
   },
