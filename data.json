@@ -363,6 +363,62 @@
       "type": "电费",
       "usage": 508,
       "amount": 353.6
+    },
+    {
+      "id": "b10",
+      "month": "2025-11",
+      "building": "106栋",
+      "type": "水费",
+      "usage": 3,
+      "amount": 1.76
+    },
+    {
+      "id": "b11",
+      "month": "2025-12",
+      "building": "106栋",
+      "type": "水费",
+      "usage": 9,
+      "amount": 5.29
+    },
+    {
+      "id": "b12",
+      "month": "2026-01",
+      "building": "106栋",
+      "type": "水费",
+      "usage": 117,
+      "amount": 68.8
+    },
+    {
+      "id": "b13",
+      "month": "2026-02",
+      "building": "106栋",
+      "type": "水费",
+      "usage": 55,
+      "amount": 32.34
+    },
+    {
+      "id": "b14",
+      "month": "2026-03",
+      "building": "106栋",
+      "type": "水费",
+      "usage": 220,
+      "amount": 30.36
+    },
+    {
+      "id": "b15",
+      "month": "2026-04",
+      "building": "106栋",
+      "type": "水费",
+      "usage": 189,
+      "amount": 111.13
+    },
+    {
+      "id": "b16",
+      "month": "2026-05",
+      "building": "106栋",
+      "type": "水费",
+      "usage": 340,
+      "amount": 206.92
     }
   ],
   "ledger": [
@@ -1874,7 +1930,7 @@
   "nid": {
     "r": 10,
     "t": 19,
-    "b": 10,
+    "b": 17,
     "l": 100
   }
 }
